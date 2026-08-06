@@ -43,12 +43,21 @@ const HL_COLORS   = ["transparent","#FEF08A","#BBF7D0","#BFDBFE","#F5D0FE","#FEC
 function DetailBlock({ block, index, total, onUpdate, onDelete, onMoveUp, onMoveDown, collapsed, onToggleCollapse }) {
   const [iconPick, setIconPick] = useState(false);
   const [colorPop, setColorPop] = useState(null); // 'text' | 'hl' | null
+  const [editing, setEditing] = useState(false);
   const edRef = useRef(null);
 
-  /* Seed initial content into DOM once per block id */
+  /* Seed content + focus at end whenever entering edit mode */
   useEffect(() => {
-    if (edRef.current) edRef.current.innerHTML = block.content || "";
-  }, [block.id]); // eslint-disable-line
+    if (!editing || collapsed || !edRef.current) return;
+    edRef.current.innerHTML = block.content || "";
+    edRef.current.focus();
+    const range = document.createRange();
+    range.selectNodeContents(edRef.current);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }, [editing, collapsed]); // eslint-disable-line
 
   function fmt(cmd, val) {
     edRef.current?.focus();
@@ -110,8 +119,8 @@ function DetailBlock({ block, index, total, onUpdate, onDelete, onMoveUp, onMove
         </div>
       </div>
 
-      {/* ── Formatting toolbar + editor (hidden when collapsed) ── */}
-      {!collapsed && (<>
+      {/* ── Read view / edit view (hidden when collapsed) ── */}
+      {!collapsed && (editing ? (<>
       <div className="dblk-toolbar">
         {/* Text style */}
         <button className="dblk-tb-btn" onMouseDown={e=>{e.preventDefault();fmt("bold")}}        title="Đậm (Ctrl+B)"><strong>B</strong></button>
@@ -187,8 +196,12 @@ function DetailBlock({ block, index, total, onUpdate, onDelete, onMoveUp, onMove
            suppressContentEditableWarning
            onInput={() => onUpdate({ content: edRef.current.innerHTML })}
            onKeyDown={onKeyDown}
+           onBlur={() => setEditing(false)}
            data-placeholder="Nhập nội dung..."/>
-      </>)}
+      </>) : (
+        <div className="dblk-view" onClick={() => setEditing(true)}
+             dangerouslySetInnerHTML={{ __html: block.content || '<p class="dblk-view-empty">Nhấn để thêm nội dung…</p>' }}/>
+      ))}
     </div>
   );
 }

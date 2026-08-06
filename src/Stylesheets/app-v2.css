@@ -604,8 +604,9 @@
 }
 .dblk-title-input::placeholder { color: var(--text3); font-weight: 400; }
 
-/* Block action buttons */
-.dblk-actions { display: flex; gap: 2px; flex-shrink: 0; }
+/* Block action buttons — only surface on hover so the read view stays clean */
+.dblk-actions { display: flex; gap: 2px; flex-shrink: 0; opacity: 0; transition: opacity 0.12s; }
+.dblk:hover .dblk-actions, .dblk:focus-within .dblk-actions { opacity: 1; }
 .dblk-actions button {
   display: flex; align-items: center; justify-content: center;
   width: 26px; height: 26px; background: none; border: none;
@@ -649,30 +650,37 @@
 }
 .dblk-color-sw:hover { transform: scale(1.18); }
 
-/* ── Rich text editor ── */
-.dblk-editor {
-  min-height: 88px; max-height: 600px;
-  padding: 13px 16px; outline: none;
+/* ── Rich text editor + read view (share typography) ── */
+.dblk-editor, .dblk-view {
+  min-height: 88px;
+  padding: 13px 16px;
   font-size: 13.5px; line-height: 1.7; color: var(--text); font-family: inherit;
-  overflow-y: auto;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
+.dblk-editor {
+  max-height: 600px; outline: none; overflow-y: auto;
+}
+.dblk-view {
+  cursor: text; transition: background 0.12s;
+}
+.dblk-view:hover { background: var(--bg2); }
 .dblk-editor:empty::before {
   content: attr(data-placeholder); color: var(--text3); pointer-events: none;
 }
-.dblk-editor p   { margin: 0 0 6px; }
-.dblk-editor ul, .dblk-editor ol { padding-left: 22px; margin: 4px 0; }
-.dblk-editor li  { margin: 3px 0; }
-.dblk-editor b, .dblk-editor strong { font-weight: 700; }
-.dblk-editor i, .dblk-editor em { font-style: italic; }
-.dblk-editor u   { text-decoration: underline; }
-.dblk-editor s, .dblk-editor strike { text-decoration: line-through; }
-.dblk-editor pre, .dblk-editor code {
+.dblk-view-empty { color: var(--text3); font-style: italic; margin: 0; }
+.dblk-editor p, .dblk-view p     { margin: 0 0 6px; }
+.dblk-editor ul, .dblk-editor ol, .dblk-view ul, .dblk-view ol { padding-left: 22px; margin: 4px 0; }
+.dblk-editor li, .dblk-view li   { margin: 3px 0; }
+.dblk-editor b, .dblk-editor strong, .dblk-view b, .dblk-view strong { font-weight: 700; }
+.dblk-editor i, .dblk-editor em, .dblk-view i, .dblk-view em { font-style: italic; }
+.dblk-editor u, .dblk-view u     { text-decoration: underline; }
+.dblk-editor s, .dblk-editor strike, .dblk-view s, .dblk-view strike { text-decoration: line-through; }
+.dblk-editor pre, .dblk-editor code, .dblk-view pre, .dblk-view code {
   font-family: "SF Mono", Consolas, monospace;
   background: var(--bg2); padding: 2px 6px; border-radius: 4px;
   font-size: 12.5px; border: 0.5px solid var(--border);
 }
-.dblk-editor pre { display: block; padding: 10px 14px; margin: 6px 0; white-space: pre-wrap; }
+.dblk-editor pre, .dblk-view pre { display: block; padding: 10px 14px; margin: 6px 0; white-space: pre-wrap; }
 
 .md h4.md-h4 { font-size: 13px; font-weight: 600; margin: 14px 0 6px; color: var(--text); }
 
