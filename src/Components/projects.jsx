@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ProjectDetailScreen } from './project-detail.jsx';
 import { toSlug } from './app.jsx';
 import { showConfirm } from './dialog.jsx';
+import { CInput, CTextarea } from './ui/CInput.jsx';
 
 const STATUS_META = {
   contract:  { label: 'Ký hợp đồng', cls: 'clt-badge--contract' },
@@ -152,6 +153,7 @@ export function ProjectsScreen({ projects = [], notebooks = [], onUpsert, onRemo
           onBack={closeDetail}
           onUpsert={p => { onUpsert(p); setDetailProj(p); }}
           onEdit={() => setModal({ mode: 'edit', form: { ...liveProj } })}
+          onRemove={id => { onRemove(id); closeDetail(); }}
           notebooks={notebooks}
           onOpenFeature={onOpenFeature}
           onCreateFeature={onCreateFeature}
@@ -194,7 +196,7 @@ export function ProjectsScreen({ projects = [], notebooks = [], onUpsert, onRemo
       <div className="clt-filter-row2">
         <div className="clt-search-bar">
           <i className="ti ti-search"/>
-          <input placeholder="Tìm khách hàng, mã, ngành..."
+          <CInput placeholder="Tìm khách hàng, mã, ngành..."
                  value={search}
                  onChange={e => setSearch(e.target.value)}/>
         </div>
@@ -239,6 +241,7 @@ export function ProjectsScreen({ projects = [], notebooks = [], onUpsert, onRemo
               proj={proj}
               notebooks={notebooks}
               onOpen={openDetail}
+              onDelete={deleteProject}
               onUpsert={onUpsert}
               statusPop={statusPop}
               setStatusPop={setStatusPop}
@@ -348,6 +351,14 @@ export function ProjectsScreen({ projects = [], notebooks = [], onUpsert, onRemo
                   {extra > 0 && <span className="clt-lrow-extra">+{extra}</span>}
                 </div>
 
+                <div className="clt-lrow-actions" onClick={e => e.stopPropagation()}>
+                  <button className="clt-lrow-act-btn" onClick={() => openEdit(proj)} title="Chỉnh sửa">
+                    <i className="ti ti-edit"/>
+                  </button>
+                  <button className="clt-lrow-act-btn clt-lrow-act-btn--del" onClick={() => deleteProject(proj)} title="Xóa">
+                    <i className="ti ti-trash"/>
+                  </button>
+                </div>
                 <i className="ti ti-chevron-right clt-chevron"/>
               </div>
             );
@@ -367,7 +378,7 @@ export function ProjectsScreen({ projects = [], notebooks = [], onUpsert, onRemo
 /* ── Grid card ── */
 const MEMBER_COLORS = ['#378ADD','#5BAA50','#8B5CF6','#F59E0B','#D85A30','#1D9E75'];
 
-function ProjectGridCard({ proj, notebooks = [], onOpen, onUpsert, statusPop, setStatusPop }) {
+function ProjectGridCard({ proj, notebooks = [], onOpen, onDelete, onUpsert, statusPop, setStatusPop }) {
   const pct     = getPct(proj);
   const sf      = STATUS_FULL[proj.status] || STATUS_FULL.contract;
   const members = proj.members || [];
@@ -457,6 +468,11 @@ function ProjectGridCard({ proj, notebooks = [], onOpen, onUpsert, statusPop, se
           <div className="clt-gc-mods">
             <i className="ti ti-layout-grid"/>
             {modCnt} module
+          </div>
+          <div className="clt-gc-card-actions" onClick={e => e.stopPropagation()}>
+            <button className="clt-gc-act-btn" onClick={() => onDelete(proj)} title="Xóa dự án">
+              <i className="ti ti-trash"/>
+            </button>
           </div>
           <button className="clt-gc-detail" onClick={e => { e.stopPropagation(); onOpen(proj); }}>
             Chi tiết <i className="ti ti-arrow-right"/>
@@ -607,7 +623,7 @@ function TaskPanel({ proj, onToggle, onAdd, onRemove }) {
         ))}
       </div>
       <div className="clt-task-add">
-        <input placeholder="Thêm task mới..." value={input}
+        <CInput placeholder="Thêm task mới..." value={input}
                onChange={e => setInput(e.target.value)}
                onKeyDown={e => { if (e.key === 'Enter') submit(); }}/>
         <button onClick={submit}><i className="ti ti-plus"/></button>
@@ -630,16 +646,16 @@ function ProjectModal({ modal, setField, onSave, onClose }) {
         <div className="ps-modal-body">
           <div className="ps-field">
             <label>Tên khách hàng / Đối tác *</label>
-            <input placeholder="VinFast, THACO, FPT..." value={f.client} onChange={e => setField('client', e.target.value)}/>
+            <CInput placeholder="VinFast, THACO, FPT..." value={f.client} onChange={e => setField('client', e.target.value)}/>
           </div>
           <div className="ps-field-row">
             <div className="ps-field">
               <label>Ngành / Lĩnh vực</label>
-              <input placeholder="Automotive, Finance..." value={f.industry||''} onChange={e => setField('industry', e.target.value)}/>
+              <CInput placeholder="Automotive, Finance..." value={f.industry||''} onChange={e => setField('industry', e.target.value)}/>
             </div>
             <div className="ps-field">
               <label>Tên dự án</label>
-              <input placeholder="ERP Phase 2..." value={f.name||''} onChange={e => setField('name', e.target.value)}/>
+              <CInput placeholder="ERP Phase 2..." value={f.name||''} onChange={e => setField('name', e.target.value)}/>
             </div>
           </div>
           <div className="ps-field-row">
@@ -676,37 +692,37 @@ function ProjectModal({ modal, setField, onSave, onClose }) {
           <div className="ps-field-row">
             <div className="ps-field">
               <label>Project Manager</label>
-              <input placeholder="Tên PM..." value={f.pm||''} onChange={e => setField('pm', e.target.value)}/>
+              <CInput placeholder="Tên PM..." value={f.pm||''} onChange={e => setField('pm', e.target.value)}/>
             </div>
             <div className="ps-field">
               <label>Modules (phân cách bởi dấu phẩy)</label>
-              <input placeholder="Sales, Purchase, Stock..." value={(f.modules||[]).join(', ')}
+              <CInput placeholder="Sales, Purchase, Stock..." value={(f.modules||[]).join(', ')}
                      onChange={e => setField('modules', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}/>
             </div>
           </div>
           <div className="ps-field-row">
             <div className="ps-field">
               <label>Người liên hệ</label>
-              <input placeholder="Họ và tên..." value={f.contactName||''} onChange={e => setField('contactName', e.target.value)}/>
+              <CInput placeholder="Họ và tên..." value={f.contactName||''} onChange={e => setField('contactName', e.target.value)}/>
             </div>
             <div className="ps-field">
               <label>Chức danh</label>
-              <input placeholder="IT Director..." value={f.contactTitle||''} onChange={e => setField('contactTitle', e.target.value)}/>
+              <CInput placeholder="IT Director..." value={f.contactTitle||''} onChange={e => setField('contactTitle', e.target.value)}/>
             </div>
           </div>
           <div className="ps-field-row">
             <div className="ps-field">
               <label>Điện thoại</label>
-              <input placeholder="0912 345 678" value={f.contactPhone||''} onChange={e => setField('contactPhone', e.target.value)}/>
+              <CInput placeholder="0912 345 678" value={f.contactPhone||''} onChange={e => setField('contactPhone', e.target.value)}/>
             </div>
             <div className="ps-field">
               <label>Email</label>
-              <input placeholder="name@company.vn" value={f.contactEmail||''} onChange={e => setField('contactEmail', e.target.value)}/>
+              <CInput placeholder="name@company.vn" value={f.contactEmail||''} onChange={e => setField('contactEmail', e.target.value)}/>
             </div>
           </div>
           <div className="ps-field">
             <label>Mô tả</label>
-            <textarea placeholder="Mô tả về dự án, phạm vi triển khai..." rows={3}
+            <CTextarea placeholder="Mô tả về dự án, phạm vi triển khai..." rows={3}
                       value={f.description||''} onChange={e => setField('description', e.target.value)}/>
           </div>
         </div>

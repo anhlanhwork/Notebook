@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { showConfirm } from './dialog.jsx';
+import { CInput, CTextarea } from './ui/CInput.jsx';
 
 const PROJ_STATUS = {
   contract:  { label: 'Ký hợp đồng', dot: '#8B5CF6', color: '#7C3AED', bg: 'rgba(139,92,246,0.12)',  border: 'rgba(139,92,246,0.4)'  },
@@ -201,7 +202,7 @@ function getDescendants(items, id) {
   return [id, ...children.flatMap(c => getDescendants(items, c.id))];
 }
 
-export function ProjectDetailScreen({ proj, onBack, onUpsert, onEdit, notebooks, onOpenFeature, onCreateFeature, onCreateModule }) {
+export function ProjectDetailScreen({ proj, onBack, onUpsert, onEdit, onRemove, notebooks, onOpenFeature, onCreateFeature, onCreateModule }) {
   const [tab, setTab] = useState('timeline');
   const [statusPop, setStatusPop] = useState(false);
   const [morePop, setMorePop] = useState(false);
@@ -311,6 +312,16 @@ export function ProjectDetailScreen({ proj, onBack, onUpsert, onEdit, notebooks,
                 <button onClick={() => { onEdit(); setMorePop(false); }}>
                   <i className="ti ti-edit"/> Chỉnh sửa thông tin
                 </button>
+                {onRemove && (
+                  <button className="pd-more-pop-del" onClick={async () => {
+                    setMorePop(false);
+                    if (!await showConfirm(`Xóa dự án "${proj.client}"?`)) return;
+                    onRemove(proj.id);
+                    onBack();
+                  }}>
+                    <i className="ti ti-trash"/> Xóa dự án
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -524,7 +535,7 @@ function TimelineTable({ items, onChange }) {
             </button>
             <i className={'ti ' + (TL_TYPE[item.type]?.icon || 'ti-circle') + ' tl-type-icon'}
                style={{ color: TL_TYPE[item.type]?.color }}/>
-            <input className={'tl-name-input' + (depth === 0 ? ' tl-name-parent' : '')}
+            <CInput className={'tl-name-input' + (depth === 0 ? ' tl-name-parent' : '')}
                    value={item.title}
                    onChange={e => updateRow(item.id, 'title', e.target.value)}/>
             {hasChildren && <span className="tl-child-count">{childCount}</span>}
@@ -899,7 +910,7 @@ function FeatureRow({ feat, wbs, depth, members, onUpdate, onRemove, onAddChild,
       <td className="pd-td pd-td--feat-name">
         <div className="pd-feat-name-cell">
           {depth > 0 && <span style={{ display: 'inline-block', width: indent + 'px', flexShrink: 0 }}/>}
-          <input
+          <CInput
             className={'pd-cell-input pd-feat-name-input' + (depth === 0 ? ' pd-feat-name-input--parent' : '')}
             value={feat.name}
             placeholder={depth === 0 ? 'Tên tính năng chính...' : 'Tên nghiệp vụ con...'}
@@ -927,7 +938,7 @@ function FeatureRow({ feat, wbs, depth, members, onUpdate, onRemove, onAddChild,
               ))}
             </select>
           ) : (
-            <input
+            <CInput
               className="pd-feat-assignee-input"
               value={feat.assignee || ''}
               placeholder="—"
@@ -1134,7 +1145,7 @@ function MemberRow({ member, onUpdate, onRemove }) {
       <td className="pd-td">
         <div className="pd-mem-name-cell">
           <div className="pd-mem-avatar" style={{ background: mt.bg, color: mt.color }}>{initials}</div>
-          <input className="pd-cell-input pd-cell-input--name"
+          <CInput className="pd-cell-input pd-cell-input--name"
                  value={member.name} placeholder="Họ và tên..."
                  onChange={e => onUpdate('name', e.target.value)}/>
         </div>
@@ -1148,19 +1159,19 @@ function MemberRow({ member, onUpdate, onRemove }) {
         </select>
       </td>
       <td className="pd-td">
-        <input className="pd-cell-input" value={member.role}
+        <CInput className="pd-cell-input" value={member.role}
                placeholder="Chức vụ..." onChange={e => onUpdate('role', e.target.value)}/>
       </td>
       <td className="pd-td">
-        <input className="pd-cell-input" value={member.projectRole}
+        <CInput className="pd-cell-input" value={member.projectRole}
                placeholder="Vai trò dự án..." onChange={e => onUpdate('projectRole', e.target.value)}/>
       </td>
       <td className="pd-td">
-        <input className="pd-cell-input" value={member.phone}
+        <CInput className="pd-cell-input" value={member.phone}
                placeholder="SĐT..." onChange={e => onUpdate('phone', e.target.value)}/>
       </td>
       <td className="pd-td">
-        <input className="pd-cell-input" type="email" value={member.email}
+        <CInput className="pd-cell-input" type="email" value={member.email}
                placeholder="Email..." onChange={e => onUpdate('email', e.target.value)}/>
       </td>
       <td className="pd-td">
@@ -1177,7 +1188,7 @@ function MemberRow({ member, onUpdate, onRemove }) {
               <i className="ti ti-external-link"/>
             </a>
           ) : null}
-          <input className="pd-cell-input pd-mem-ch-input" value={member.supportLink}
+          <CInput className="pd-cell-input pd-mem-ch-input" value={member.supportLink}
                  placeholder="Link..." onChange={e => onUpdate('supportLink', e.target.value)}/>
         </div>
       </td>
@@ -1199,7 +1210,7 @@ function GroupRow({ group, onUpdate, onRemove }) {
       <td className="pd-td">
         <div className="pd-grp-name-cell">
           <div className="pd-grp-avatar" style={{ background: pl.bg, color: pl.color }}>{initial}</div>
-          <input className="pd-cell-input pd-cell-input--name"
+          <CInput className="pd-cell-input pd-cell-input--name"
                  value={group.name} placeholder="Tên nhóm chat..."
                  onChange={e => onUpdate('name', e.target.value)}/>
         </div>
@@ -1213,7 +1224,7 @@ function GroupRow({ group, onUpdate, onRemove }) {
         </select>
       </td>
       <td className="pd-td">
-        <input className="pd-cell-input" value={group.description}
+        <CInput className="pd-cell-input" value={group.description}
                placeholder="Mô tả nhóm..." onChange={e => onUpdate('description', e.target.value)}/>
       </td>
       <td className="pd-td">
@@ -1226,7 +1237,7 @@ function GroupRow({ group, onUpdate, onRemove }) {
       </td>
       <td className="pd-td">
         <div className="pd-grp-link-cell">
-          <input className="pd-cell-input" value={group.link}
+          <CInput className="pd-cell-input" value={group.link}
                  placeholder="https://..." onChange={e => onUpdate('link', e.target.value)}/>
           {group.link && (
             <a className="pd-grp-link-btn" href={group.link} target="_blank" rel="noreferrer"
@@ -1394,13 +1405,13 @@ function DocRow({ doc, depth, onUpdate, onRemove, onAddChild }) {
         <div className="pd-doc-name-cell" style={{ paddingLeft: indent }}>
           <i className={'ti ' + src.icon + ' pd-doc-src-icon'} style={{ color: src.color }}/>
           <div className="pd-doc-name-stack">
-            <input
+            <CInput
               className="pd-cell-input pd-cell-input--doc-name"
               value={doc.name}
               placeholder={depth === 0 ? 'Tên tài liệu...' : 'Tên mục con...'}
               onChange={e => onUpdate('name', e.target.value)}
             />
-            <input
+            <CInput
               className="pd-cell-input pd-doc-url-input"
               value={doc.link}
               placeholder="https://..."
@@ -1441,7 +1452,7 @@ function DocRow({ doc, depth, onUpdate, onRemove, onAddChild }) {
             {doc.addedBy.slice(0, 2).toUpperCase()}
           </div>
         ) : (
-          <input
+          <CInput
             className="pd-cell-input pd-doc-addedby-input"
             value={doc.addedBy}
             placeholder="VD: NL"
@@ -1533,7 +1544,7 @@ function FeaturePickerModal({ notebooks, onSelect, onCreateFeature, onCreateModu
           </div>
           <div className="pd-fpick-search">
             <i className="ti ti-search"/>
-            <input autoFocus placeholder="Tìm module..." value={search} onChange={e => setSearch(e.target.value)}/>
+            <CInput autoFocus placeholder="Tìm module..." value={search} onChange={e => setSearch(e.target.value)}/>
           </div>
           <div className="pd-fpick-list">
             {filtered.length === 0
@@ -1554,7 +1565,7 @@ function FeaturePickerModal({ notebooks, onSelect, onCreateFeature, onCreateModu
                   {notebooks.map(nb => <option key={nb.id} value={nb.id}>{nb.name}</option>)}
                 </select>
                 <div className="pd-fpick-create-row">
-                  <input className="pd-fpick-name-input" autoFocus placeholder="Tên module..."
+                  <CInput className="pd-fpick-name-input" autoFocus placeholder="Tên module..."
                          value={newName} onChange={e => setNewName(e.target.value)}
                          onKeyDown={e => { if (e.key === 'Enter') handleCreateModule(); }}/>
                   <button className="btn-primary" onClick={handleCreateModule} disabled={!newName.trim()}>Tạo</button>
@@ -1589,7 +1600,7 @@ function FeaturePickerModal({ notebooks, onSelect, onCreateFeature, onCreateModu
         <div className="pd-fpick-mod-bc">{liveMod?.notebookName}</div>
         <div className="pd-fpick-search">
           <i className="ti ti-search"/>
-          <input autoFocus placeholder="Tìm tính năng..." value={search} onChange={e => setSearch(e.target.value)}/>
+          <CInput autoFocus placeholder="Tìm tính năng..." value={search} onChange={e => setSearch(e.target.value)}/>
         </div>
         <div className="pd-fpick-list">
           {filteredFeats.length === 0
@@ -1610,7 +1621,7 @@ function FeaturePickerModal({ notebooks, onSelect, onCreateFeature, onCreateModu
             <div className="pd-fpick-create-form">
               <div className="pd-fpick-create-lbl">Tạo tính năng mới trong <strong>{liveMod?.name}</strong></div>
               <div className="pd-fpick-create-row">
-                <input className="pd-fpick-name-input" autoFocus placeholder="Tên tính năng..."
+                <CInput className="pd-fpick-name-input" autoFocus placeholder="Tên tính năng..."
                        value={newName} onChange={e => setNewName(e.target.value)}
                        onKeyDown={e => { if (e.key === 'Enter') handleCreateFeature(); }}/>
                 <button className="btn-primary" onClick={handleCreateFeature} disabled={!newName.trim()}>Tạo & chọn</button>
@@ -1654,7 +1665,7 @@ function NoteEditor({ note, onUpdate, onDelete }) {
     <div className="pn-editor-panel" style={{ background: colorMeta.bg || 'var(--bg)' }}>
       {/* Title row */}
       <div className="pn-editor-head">
-        <input
+        <CInput
           className="pn-title-input"
           value={note.title}
           onChange={e => onUpdate('title', e.target.value)}
@@ -1799,7 +1810,7 @@ function NotesTab({ proj, onUpsert }) {
         <div className="pn-sidebar-head">
           <div className="pn-search-wrap">
             <i className="ti ti-search pn-search-icon"/>
-            <input
+            <CInput
               className="pn-search"
               placeholder="Tìm ghi chú..."
               value={query}
@@ -1891,7 +1902,7 @@ function ChangelogRow({ entry, features, onUpdate, onRemove }) {
   return (
     <tr className="cl-row">
       <td className="cl-td cl-td--ver">
-        <input className="cl-cell-input cl-cell-input--ver" value={entry.version}
+        <CInput className="cl-cell-input cl-cell-input--ver" value={entry.version}
           onChange={e => onUpdate('version', e.target.value)} placeholder="1.0" />
       </td>
       <td className="cl-td cl-td--date">
@@ -1913,14 +1924,14 @@ function ChangelogRow({ entry, features, onUpdate, onRemove }) {
         </select>
       </td>
       <td className="cl-td cl-td--desc">
-        <input className="cl-cell-input cl-cell-input--title" value={entry.title}
+        <CInput className="cl-cell-input cl-cell-input--title" value={entry.title}
           onChange={e => onUpdate('title', e.target.value)} placeholder="Nội dung thay đổi..." />
         {entry.desc && <span className="cl-cell-sub">{entry.desc}</span>}
       </td>
       <td className="cl-td cl-td--author">
         <div className="cl-author-cell">
           <span className="cl-avatar">{initials}</span>
-          <input className="cl-cell-input" value={entry.author}
+          <CInput className="cl-cell-input" value={entry.author}
             onChange={e => onUpdate('author', e.target.value)} placeholder="Người thực hiện" />
         </div>
       </td>
@@ -2010,7 +2021,7 @@ function ChangelogTab({ proj, onUpsert, onAddEntry }) {
             Bảng theo dõi thay đổi <span className="cl-main-title-sub">(Change Log)</span>
           </h3>
           <p className="cl-header-sub">
-            <input className="cl-doc-name-input" value={clMeta.docName || ''}
+            <CInput className="cl-doc-name-input" value={clMeta.docName || ''}
               onChange={e => saveMeta({ ...clMeta, docName: e.target.value })}
               placeholder={proj.name || 'Tên tài liệu'} />
             · {entries.length} bản ghi · Bản hiện tại: v{currentVer}
@@ -2087,23 +2098,23 @@ function ChangelogTab({ proj, onUpsert, onAddEntry }) {
         <div className="cl-footer-cell">
           <span className="cl-footer-lbl">TÁC GIẢ</span>
           <div className="cl-footer-sig-line"/>
-          <input className="cl-footer-input" value={clMeta.author || ''}
+          <CInput className="cl-footer-input" value={clMeta.author || ''}
             onChange={e => saveMeta({ ...clMeta, author: e.target.value })}
             placeholder="Tên tác giả" />
         </div>
         <div className="cl-footer-cell">
           <span className="cl-footer-lbl">PHÊ DUYỆT</span>
           <div className="cl-footer-sig-line"/>
-          <input className="cl-footer-input" value={clMeta.approver || ''}
+          <CInput className="cl-footer-input" value={clMeta.approver || ''}
             onChange={e => saveMeta({ ...clMeta, approver: e.target.value })}
             placeholder="Người phê duyệt" />
         </div>
         <div className="cl-footer-cell">
           <span className="cl-footer-lbl">THAM CHIẾU</span>
-          <input className="cl-footer-input cl-footer-input--ref" value={clMeta.refDoc || ''}
+          <CInput className="cl-footer-input cl-footer-input--ref" value={clMeta.refDoc || ''}
             onChange={e => saveMeta({ ...clMeta, refDoc: e.target.value })}
             placeholder="Tên tài liệu (vd: SRS-2026.docx)" />
-          <input className="cl-footer-input cl-footer-input--fmt" value={clMeta.refFormat || ''}
+          <CInput className="cl-footer-input cl-footer-input--fmt" value={clMeta.refFormat || ''}
             onChange={e => saveMeta({ ...clMeta, refFormat: e.target.value })}
             placeholder="Format / Tiêu chuẩn (vd: IEEE 830)" />
         </div>

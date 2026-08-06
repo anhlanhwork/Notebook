@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { BPMNFlow } from './bpmn.jsx';
 import { ERDModels } from './erd.jsx';
 import { showConfirm, showPrompt } from './dialog.jsx';
+import { CInput, CTextarea } from './ui/CInput.jsx';
 
 export const FEATURE_TABS = [
   { key: "models",       label: "Models",             icon: "ti-table" },
@@ -94,7 +95,7 @@ function DetailBlock({ block, index, total, onUpdate, onDelete, onMoveUp, onMove
           )}
         </div>
 
-        <input className="dblk-title-input" value={block.title || ""}
+        <CInput className="dblk-title-input" value={block.title || ""}
                onChange={e => onUpdate({ title: e.target.value })}
                placeholder="Tiêu đề block..."/>
 
@@ -311,7 +312,7 @@ function IntCard({ item, onUpdate, onDelete, onMoveUp, onMoveDown, index, total,
         </div>
 
         {/* Module name */}
-        <input className="intc-module-input"
+        <CInput className="intc-module-input"
                value={item.module || ""}
                onChange={e => onUpdate({ module: e.target.value })}
                placeholder="module.name"/>
@@ -572,7 +573,7 @@ function CaseCard({ item, index, total, onUpdate, onDelete, onMoveUp, onMoveDown
           <i className={"ti " + (open ? "ti-chevron-down" : "ti-chevron-right")}/>
         </button>
         <span className="csc-num">#{String(index + 1).padStart(2, "0")}</span>
-        <input className="csc-title-input" value={item.title || ""}
+        <CInput className="csc-title-input" value={item.title || ""}
                onChange={e => onUpdate({ title: e.target.value })}
                placeholder="Tên case..."/>
 
@@ -599,7 +600,7 @@ function CaseCard({ item, index, total, onUpdate, onDelete, onMoveUp, onMoveDown
           {/* Chat / ticket link */}
           <div className="csc-section">
             <label className="csc-lbl"><i className="ti ti-link"/> Link nhóm chat / ticket</label>
-            <input className="csc-input-full" type="url"
+            <CInput className="csc-input-full" type="url"
                    value={item.chatLink || ""}
                    onChange={e => onUpdate({ chatLink: e.target.value })}
                    placeholder="https://..."/>
@@ -610,7 +611,7 @@ function CaseCard({ item, index, total, onUpdate, onDelete, onMoveUp, onMoveDown
             <label className="csc-lbl">
               <i className="ti ti-align-left"/> Mô tả lỗi <span className="csc-req">*</span>
             </label>
-            <textarea className="csc-textarea csc-textarea-lg"
+            <CTextarea className="csc-textarea csc-textarea-lg"
                       value={item.description || ""}
                       onChange={e => onUpdate({ description: e.target.value })}
                       placeholder="Mô tả chi tiết vấn đề, bước tái hiện..."/>
@@ -658,14 +659,14 @@ function CaseCard({ item, index, total, onUpdate, onDelete, onMoveUp, onMoveDown
           <div className="csc-two-col">
             <div className="csc-section">
               <label className="csc-lbl"><i className="ti ti-analyze"/> Nguyên nhân</label>
-              <textarea className="csc-textarea"
+              <CTextarea className="csc-textarea"
                         value={item.cause || ""}
                         onChange={e => onUpdate({ cause: e.target.value })}
                         placeholder="Nguyên nhân gốc rễ..."/>
             </div>
             <div className="csc-section">
               <label className="csc-lbl"><i className="ti ti-check"/> Cách xử lý</label>
-              <textarea className="csc-textarea"
+              <CTextarea className="csc-textarea"
                         value={item.resolution || ""}
                         onChange={e => onUpdate({ resolution: e.target.value })}
                         placeholder="Giải pháp đã áp dụng..."/>
@@ -930,25 +931,25 @@ function OverviewPane({ mod, setMod }) {
             <div className="ov-row">
               <span className="ov-row-lbl">Phiên bản</span>
               <div className="ov-row-val">
-                <input className="ov-input" value={ov.version || ""} onChange={e => field("version", e.target.value)} placeholder="18.0" />
+                <CInput className="ov-input" value={ov.version || ""} onChange={e => field("version", e.target.value)} placeholder="18.0" />
               </div>
             </div>
             <div className="ov-row">
               <span className="ov-row-lbl">Danh mục</span>
               <div className="ov-row-val">
-                <input className="ov-input" value={ov.category || ""} onChange={e => field("category", e.target.value)} placeholder="vd: Bán hàng" />
+                <CInput className="ov-input" value={ov.category || ""} onChange={e => field("category", e.target.value)} placeholder="vd: Bán hàng" />
               </div>
             </div>
             <div className="ov-row">
               <span className="ov-row-lbl">Depends</span>
               <div className="ov-row-val">
-                <input className="ov-input" value={ov.depends || ""} onChange={e => field("depends", e.target.value)} placeholder="base, mail, account..." />
+                <CInput className="ov-input" value={ov.depends || ""} onChange={e => field("depends", e.target.value)} placeholder="base, mail, account..." />
               </div>
             </div>
             <div className="ov-row">
               <span className="ov-row-lbl">Menu</span>
               <div className="ov-row-val">
-                <input className="ov-input" value={ov.menu || ""} onChange={e => field("menu", e.target.value)} placeholder="vd: Sales ▸ Orders ▸ Quotations" />
+                <CInput className="ov-input" value={ov.menu || ""} onChange={e => field("menu", e.target.value)} placeholder="vd: Sales ▸ Orders ▸ Quotations" />
               </div>
             </div>
             <div className="ov-row ov-row-status">
@@ -974,7 +975,7 @@ function OverviewPane({ mod, setMod }) {
 
         <div className="ov-card ov-card-purpose">
           <div className="ov-card-title">Mục đích / Chức năng chính</div>
-          <textarea
+          <CTextarea
             className="ov-purpose-textarea"
             value={ov.purpose || ""}
             onChange={e => field("purpose", e.target.value)}
@@ -1093,7 +1094,7 @@ function ChangelogRow({ entry, idx, features, onUpdate, onRemove }) {
       <div className="cl-card-head">
         <div className="cl-card-head-left">
           <span className="cl-card-idx">{idx + 1}</span>
-          <input className="cl-card-ver" value={entry.version}
+          <CInput className="cl-card-ver" value={entry.version}
             onChange={e => onUpdate('version', e.target.value)} placeholder="v1.0" />
           <input className="cl-card-date" type="date" value={entry.date}
             onChange={e => onUpdate('date', e.target.value)} />
@@ -1119,14 +1120,14 @@ function ChangelogRow({ entry, idx, features, onUpdate, onRemove }) {
         </div>
       </div>
       <div className="cl-card-body">
-        <input className="cl-card-title-input" value={entry.title}
+        <CInput className="cl-card-title-input" value={entry.title}
           onChange={e => onUpdate('title', e.target.value)} placeholder="Nội dung thay đổi..." />
-        <input className="cl-card-desc-input" value={entry.desc}
+        <CInput className="cl-card-desc-input" value={entry.desc}
           onChange={e => onUpdate('desc', e.target.value)} placeholder="Chi tiết (tùy chọn)" />
         <div className="cl-card-meta">
           <label className="cl-meta-item">
             <span className="cl-meta-lbl"><i className="ti ti-user"/> Người thực hiện</span>
-            <input className="cl-meta-input" value={entry.author}
+            <CInput className="cl-meta-input" value={entry.author}
               onChange={e => onUpdate('author', e.target.value)} placeholder="Tên..." />
           </label>
           <label className="cl-meta-item">

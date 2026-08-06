@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ShareModal } from './share-modal.jsx';
 import { showConfirm } from './dialog.jsx';
+import { CInput, CTextarea } from './ui/CInput.jsx';
 
 const PRESET_COLORS = [
   "#5BAA50", "#1F6B40", "#378ADD", "#BA7517",
@@ -15,7 +16,7 @@ const NOTEBOOK_ICONS = [
   "ti-flag",           "ti-link",        "ti-cpu",       "ti-shield",
 ];
 
-function HomeScreen({ data, setData, onOpen, onOpenAllFeatures }) {
+function HomeScreen({ data, setData, onOpen }) {
 
   const [query,     setQuery]  = useState("");
   const [view,      setView]   = useState("grid");
@@ -131,20 +132,10 @@ function HomeScreen({ data, setData, onOpen, onOpenAllFeatures }) {
 
       {/* ── Body ── */}
       <div className="home-body">
-        {onOpenAllFeatures && (
-          <button className="af-home-shortcut" onClick={onOpenAllFeatures}>
-            <div className="af-shortcut-icon"><i className="ti ti-list-check"/></div>
-            <div className="af-shortcut-text">
-              <div className="af-shortcut-title">Tổng hợp tính năng</div>
-              <div className="af-shortcut-sub">Xem toàn bộ tính năng từ tất cả các sổ tay và module</div>
-            </div>
-            <i className="ti ti-chevron-right" style={{ color: 'var(--text3)', fontSize: 16 }}/>
-          </button>
-        )}
         <div className="home-toolbar">
           <div className="home-search ml-search">
             <i className="ti ti-search"></i>
-            <input
+            <CInput
               placeholder="Tìm sổ tay, mô tả, tag..."
               value={query}
               onChange={e => setQuery(e.target.value)}
@@ -380,7 +371,7 @@ function HomeScreen({ data, setData, onOpen, onOpenAllFeatures }) {
             </div>
 
             <label className="modal-lbl">Tên sổ tay <span className="req">*</span></label>
-            <input
+            <CInput
               className="modal-input"
               autoFocus
               value={editDraft.name}
@@ -389,7 +380,7 @@ function HomeScreen({ data, setData, onOpen, onOpenAllFeatures }) {
             />
 
             <label className="modal-lbl">Mô tả ngắn</label>
-            <textarea
+            <CTextarea
               className="modal-input modal-textarea"
               value={editDraft.description}
               placeholder="Sổ tay này dùng để..."
@@ -397,7 +388,7 @@ function HomeScreen({ data, setData, onOpen, onOpenAllFeatures }) {
             />
 
             <label className="modal-lbl">Tags (cách nhau bằng dấu phẩy)</label>
-            <input
+            <CInput
               className="modal-input"
               value={editDraft.tags}
               placeholder="ERP, Backend, API..."
@@ -452,7 +443,7 @@ function HomeScreen({ data, setData, onOpen, onOpenAllFeatures }) {
             </div>
 
             <label className="modal-lbl">Tên sổ tay <span className="req">*</span></label>
-            <input
+            <CInput
               className="modal-input"
               autoFocus
               value={draft.name}
@@ -462,7 +453,7 @@ function HomeScreen({ data, setData, onOpen, onOpenAllFeatures }) {
             />
 
             <label className="modal-lbl">Mô tả ngắn</label>
-            <textarea
+            <CTextarea
               className="modal-input modal-textarea"
               value={draft.description}
               placeholder="Sổ tay này dùng để..."
@@ -470,7 +461,7 @@ function HomeScreen({ data, setData, onOpen, onOpenAllFeatures }) {
             />
 
             <label className="modal-lbl">Tags (cách nhau bằng dấu phẩy)</label>
-            <input
+            <CInput
               className="modal-input"
               value={draft.tags}
               placeholder="ERP, Backend, API..."

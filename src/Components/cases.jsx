@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { showConfirm } from './dialog.jsx';
+import { CInput, CTextarea } from './ui/CInput.jsx';
 
 /* CasesPane — list of customer-encountered issue cases.
    Per case: title, link nhóm (chat/Slack), mô tả lỗi, ảnh chụp,
@@ -85,7 +86,7 @@ function CaseCard({ c, onChange, onDelete, onMoveUp, onMoveDown, index, canMoveU
           <i className={"ti " + (collapsed ? "ti-chevron-right" : "ti-chevron-down")}></i>
         </button>
         <span className="case-num">#{String(index + 1).padStart(2, "0")}</span>
-        <input
+        <CInput
           className="case-title"
           value={c.title || ""}
           placeholder="Tên lỗi/tình huống..."
@@ -113,7 +114,7 @@ function CaseCard({ c, onChange, onDelete, onMoveUp, onMoveDown, index, canMoveU
           <div className="case-field">
             <label><i className="ti ti-link"></i> Link nhóm chat / ticket</label>
             <div className="case-link-row">
-              <input
+              <CInput
                 className="case-input"
                 value={c.groupLink || ""}
                 placeholder="https://..."
@@ -124,7 +125,7 @@ function CaseCard({ c, onChange, onDelete, onMoveUp, onMoveDown, index, canMoveU
 
           <div className="case-field">
             <label><i className="ti ti-bug"></i> Mô tả lỗi</label>
-            <textarea
+            <CTextarea
               className="case-ta"
               value={c.errorDesc || ""}
               onChange={e => onChange({ ...c, errorDesc: e.target.value })}
@@ -152,11 +153,11 @@ function CaseCard({ c, onChange, onDelete, onMoveUp, onMoveDown, index, canMoveU
           <div className="case-2col">
             <div className="case-field">
               <label><i className="ti ti-zoom-question"></i> Nguyên nhân</label>
-              <textarea className="case-ta" value={c.rootCause || ""} onChange={e => onChange({ ...c, rootCause: e.target.value })} />
+              <CTextarea className="case-ta" value={c.rootCause || ""} onChange={e => onChange({ ...c, rootCause: e.target.value })} />
             </div>
             <div className="case-field">
               <label><i className="ti ti-tool"></i> Cách xử lý</label>
-              <textarea className="case-ta" value={c.resolution || ""} onChange={e => onChange({ ...c, resolution: e.target.value })} />
+              <CTextarea className="case-ta" value={c.resolution || ""} onChange={e => onChange({ ...c, resolution: e.target.value })} />
             </div>
           </div>
         </div>

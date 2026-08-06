@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ShareModal } from './share-modal.jsx';
 import { showConfirm } from './dialog.jsx';
+import { CInput } from './ui/CInput.jsx';
 
 const STATUS_META = {
   pending:  { label: "Chưa bắt đầu",   color: "var(--text3)",   bg: "var(--bg3)"     },
@@ -146,7 +147,7 @@ function ModuleListScreen({ notebook, setNotebook, onOpen, onBack }) {
             <div className="ml-toolbar-left">
               <div className="ml-search">
                 <i className="ti ti-search"></i>
-                <input
+                <CInput
                   placeholder="Tìm module, technical name, danh mục..."
                   value={query}
                   onChange={e => setQuery(e.target.value)}
@@ -324,6 +325,14 @@ function ModuleListScreen({ notebook, setNotebook, onOpen, onBack }) {
                   <div className="ml-lc-date ml-lrow-date">
                     {m.updatedAt || <span className="ml-dash">—</span>}
                   </div>
+                  <div className="ml-lrow-actions" onClick={e => e.stopPropagation()}>
+                    <button className="ml-lrow-act-btn" onClick={e => openEdit(m, e)} title="Chỉnh sửa">
+                      <i className="ti ti-edit"/>
+                    </button>
+                    <button className="ml-lrow-act-btn ml-lrow-act-btn--del" onClick={e => deleteModule(m.id, e)} title="Xóa">
+                      <i className="ti ti-trash"/>
+                    </button>
+                  </div>
                   <i className="ti ti-chevron-right ml-lrow-chev"/>
                 </div>
               );
@@ -359,7 +368,7 @@ function ModuleListScreen({ notebook, setNotebook, onOpen, onBack }) {
             </div>
 
             <label className="modal-lbl">Tên hiển thị <span className="req">*</span></label>
-            <input
+            <CInput
               className="modal-input"
               autoFocus
               value={editDraft.name}
@@ -368,7 +377,7 @@ function ModuleListScreen({ notebook, setNotebook, onOpen, onBack }) {
             />
 
             <label className="modal-lbl">Technical name</label>
-            <input
+            <CInput
               className="modal-input modal-mono"
               value={editDraft.tech}
               placeholder="vd: mrp, project, helpdesk..."
@@ -377,7 +386,7 @@ function ModuleListScreen({ notebook, setNotebook, onOpen, onBack }) {
             />
 
             <label className="modal-lbl">Danh mục</label>
-            <input
+            <CInput
               className="modal-input"
               value={editDraft.category}
               placeholder="Sản xuất, Dự án..."
@@ -415,7 +424,7 @@ function ModuleListScreen({ notebook, setNotebook, onOpen, onBack }) {
             </div>
 
             <label className="modal-lbl">Tên hiển thị <span className="req">*</span></label>
-            <input
+            <CInput
               className="modal-input"
               autoFocus
               value={draft.name}
@@ -425,7 +434,7 @@ function ModuleListScreen({ notebook, setNotebook, onOpen, onBack }) {
             />
 
             <label className="modal-lbl">Technical name</label>
-            <input
+            <CInput
               className="modal-input modal-mono"
               value={draft.tech}
               placeholder="vd: mrp, project, helpdesk..."
@@ -434,7 +443,7 @@ function ModuleListScreen({ notebook, setNotebook, onOpen, onBack }) {
             />
 
             <label className="modal-lbl">Danh mục</label>
-            <input
+            <CInput
               className="modal-input"
               value={draft.category}
               placeholder="Sản xuất, Dự án..."
