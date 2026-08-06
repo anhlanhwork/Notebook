@@ -11,7 +11,7 @@ import { useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakColor, TweakButt
 import { useAuth } from '../hooks/useAuth.jsx';
 import { subscribeNotebooks, upsertNotebook, removeNotebook,
          subscribeProjects, upsertProject, removeProject } from '../services/db.js';
-import SEED_DATA from '../Scripts/data.js';
+import SEED_DATA, { SAMPLE_PROJECTS } from '../Scripts/data.js';
 import { NavShell } from './nav-shell.jsx';
 import { DashboardScreen } from './dashboard.jsx';
 import { ProjectsScreen } from './projects.jsx';
@@ -137,7 +137,7 @@ function App() {
     if (user.isDemo) {
       migrationDoneRef.current = true;
       setData(SEED_DATA);
-      setProjects([]);
+      setProjects(SAMPLE_PROJECTS);
       dataLoadedRef.current = true;
       setDataLoaded(true);
       resolveUrl(SEED_DATA.notebooks);
@@ -660,7 +660,7 @@ function App() {
           <TweakButton label="Reset về dữ liệu mẫu" onClick={async () => {
             if (!await showConfirm("Reset toàn bộ về dữ liệu mẫu? Xoá tất cả sổ tay hiện tại.")) return;
             if (!user) return;
-            if (user.isDemo) { setData(SEED_DATA); return; }
+            if (user.isDemo) { setData(SEED_DATA); setProjects(SAMPLE_PROJECTS); return; }
             await Promise.all(data.notebooks.map(nb => removeNotebook(nb.id)));
             await Promise.all(SEED_DATA.notebooks.map(nb => upsertNotebook(user.uid, nb)));
           }} />

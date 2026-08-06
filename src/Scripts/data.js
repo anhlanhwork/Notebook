@@ -580,6 +580,143 @@ export const HR = emptyModule({
   features: []
 });
 
+/* ── Sample projects (for demo) ── */
+export const SAMPLE_PROJECTS = [
+  {
+    id: "proj_ntx",
+    client: "Nội Thất Xanh",
+    industry: "Sản xuất & Bán lẻ Nội thất",
+    name: "Triển khai Odoo 18 — Sales & CRM",
+    status: "demo",
+    startDate: "2026-04-01",
+    endDate: "2026-07-31",
+    color: "#378ADD",
+    description: "Triển khai module Sales + CRM cho chuỗi 5 showroom nội thất, đồng bộ tồn kho và pipeline bán hàng.",
+    updatedAt: "2026-06-10",
+    tasks: [
+      { id: "t_ntx1", name: "Gửi bảng báo giá license cho khách", done: true },
+      { id: "t_ntx2", name: "Chốt danh sách trường dữ liệu import khách hàng cũ", done: true },
+      { id: "t_ntx3", name: "Xác nhận lịch UAT với sales team 5 showroom", done: false },
+      { id: "t_ntx4", name: "Chuẩn bị tài liệu đào tạo bản in", done: false }
+    ],
+    timeline: [
+      {
+        id: "tl_ntx1", title: "Khảo sát & Ký hợp đồng", start: "2026-04-01", end: "2026-04-15", progress: 100, type: "phase",
+        children: [
+          { id: "tl_ntx1a", title: "Ký hợp đồng triển khai", start: "2026-04-10", end: "2026-04-10", progress: 100, type: "milestone", children: [] },
+          { id: "tl_ntx1b", title: "Bản khảo sát nghiệp vụ", start: "2026-04-05", end: "2026-04-08", progress: 100, type: "doc", children: [] }
+        ]
+      },
+      {
+        id: "tl_ntx2", title: "Setup & Cấu hình hệ thống", start: "2026-04-16", end: "2026-05-10", progress: 100, type: "phase",
+        children: [
+          { id: "tl_ntx2a", title: "Cài đặt server & Odoo 18", start: "2026-04-16", end: "2026-04-20", progress: 100, type: "event", children: [] },
+          { id: "tl_ntx2b", title: "Khách yêu cầu thêm trường Mã số thuế trên Lead", start: "2026-04-25", end: "2026-04-25", progress: 100, type: "comment", children: [] }
+        ]
+      },
+      {
+        id: "tl_ntx3", title: "Triển khai CRM + Sales", start: "2026-05-11", end: "2026-06-20", progress: 65, type: "phase",
+        children: [
+          { id: "tl_ntx3a", title: "Demo Pipeline CRM cho quản lý", start: "2026-05-20", end: "2026-05-20", progress: 100, type: "milestone", children: [] },
+          { id: "tl_ntx3b", title: "Import dữ liệu khách hàng cũ (2.400 KH)", start: "2026-05-22", end: "2026-06-05", progress: 80, type: "event", children: [] },
+          { id: "tl_ntx3c", title: "UAT với sales team 5 showroom", start: "2026-06-15", end: "2026-06-20", progress: 0, type: "future", children: [] }
+        ]
+      },
+      {
+        id: "tl_ntx4", title: "Go-live & Đào tạo", start: "2026-06-21", end: "2026-07-31", progress: 10, type: "phase",
+        children: [
+          { id: "tl_ntx4a", title: "Đào tạo người dùng 5 showroom", start: "2026-07-01", end: "2026-07-10", progress: 0, type: "future", children: [] },
+          { id: "tl_ntx4b", title: "Go-live chính thức", start: "2026-07-15", end: "2026-07-15", progress: 0, type: "future", children: [] }
+        ]
+      }
+    ],
+    features: [
+      { id: "feat_ntx1",  name: "Thu thập lead từ Website & Zalo OA",     status: "done",      assignee: "Nguyễn Ngọc Anh", parentId: null,
+        linkedFeature: { moduleId: "mod_crm", featureId: "f_crm_1", notebookName: "Odoo 18", moduleName: "CRM", featureName: "Thu thập & Phân loại Lead" } },
+      { id: "feat_ntx1a", name: "Tích hợp Zalo OA vào crm.lead",         status: "studying",  assignee: "Trần Minh Quân",  parentId: "feat_ntx1", linkedFeature: null },
+      { id: "feat_ntx2",  name: "Pipeline bán hàng theo từng showroom",  status: "deploying", assignee: "Nguyễn Ngọc Anh", parentId: null,
+        linkedFeature: { moduleId: "mod_crm", featureId: "f_crm_2", notebookName: "Odoo 18", moduleName: "CRM", featureName: "Quản lý Pipeline cơ hội (Kanban)" } },
+      { id: "feat_ntx3",  name: "Chốt deal → xuất báo giá tự động",      status: "pending",   assignee: "Trần Minh Quân",  parentId: null,
+        linkedFeature: { moduleId: "mod_crm", featureId: "f_crm_4", notebookName: "Odoo 18", moduleName: "CRM", featureName: "Chốt deal & Chuyển thành đơn hàng" } },
+      { id: "feat_ntx4",  name: "Đào tạo sales dùng app di động",        status: "overdue",   assignee: "Lê Thu Hà",       parentId: null, linkedFeature: null },
+      { id: "feat_ntx5",  name: "Chốt tồn kho đầu kỳ 5 showroom",        status: "done",      assignee: "Lê Thu Hà",       parentId: null, linkedFeature: null }
+    ],
+    members: [
+      { id: "mem_ntx1", name: "Nguyễn Ngọc Anh", type: "internal",  role: "Consultant trưởng", projectRole: "Project Lead",      phone: "0901234567", email: "ngocanh@company.vn",        supportPlatform: "zalo",  supportLink: "" },
+      { id: "mem_ntx2", name: "Trần Minh Quân",  type: "internal",  role: "Odoo Developer",    projectRole: "Kỹ thuật",           phone: "0912345678", email: "quan.tran@company.vn",      supportPlatform: "teams", supportLink: "" },
+      { id: "mem_ntx3", name: "Lê Thu Hà",       type: "freelance", role: "Business Analyst",  projectRole: "BA / Đào tạo",       phone: "0987654321", email: "ha.le.freelance@gmail.com", supportPlatform: "zalo",  supportLink: "" },
+      { id: "mem_ntx4", name: "Phạm Văn Đức",    type: "ctv",       role: "CTV Import dữ liệu",projectRole: "Data migration",     phone: "0933111222", email: "",                          supportPlatform: "zalo",  supportLink: "" }
+    ],
+    chatGroups: [
+      { id: "grp_ntx1", name: "NTX x Triển khai Odoo",      platform: "zalo",  description: "Nhóm chính trao đổi tiến độ hằng ngày với khách hàng", memberCount: 12, link: "" },
+      { id: "grp_ntx2", name: "Internal — Team kỹ thuật",   platform: "teams", description: "Nhóm nội bộ dev + BA bàn kỹ thuật",                    memberCount: 5,  link: "" }
+    ],
+    docs: [
+      { id: "doc_ntx1", name: "Hợp đồng triển khai Odoo 18",      link: "https://drive.google.com/", type: "contract", addedBy: "Nguyễn Ngọc Anh", updatedAt: "2026-04-10", parentId: null },
+      { id: "doc_ntx2", name: "Đặc tả nghiệp vụ CRM & Sales",     link: "https://docs.google.com/document/", type: "spec",    addedBy: "Lê Thu Hà",       updatedAt: "2026-04-20", parentId: null },
+      { id: "doc_ntx3", name: "Biên bản họp Demo Pipeline",       link: "https://docs.google.com/document/", type: "minutes", addedBy: "Trần Minh Quân",  updatedAt: "2026-05-20", parentId: null },
+      { id: "doc_ntx4", name: "Hướng dẫn dùng CRM cho Sales",     link: "https://docs.google.com/document/", type: "guide",   addedBy: "Nguyễn Ngọc Anh", updatedAt: "2026-06-01", parentId: null }
+    ],
+    changelog: [
+      { id: "cl_ntx4", date: "2026-06-05", version: "1.3", type: "feature",     status: "approved", impact: "high",   author: "Trần Minh Quân",  featureId: "feat_ntx2", title: "Hoàn tất cấu hình Pipeline theo showroom",    desc: "5 pipeline riêng cho từng showroom, phân quyền theo team." },
+      { id: "cl_ntx3", date: "2026-05-28", version: "1.2", type: "fix",         status: "approved", impact: "medium", author: "Trần Minh Quân",  featureId: "",          title: "Sửa lỗi import trùng khách hàng",             desc: "2.400 bản ghi cũ bị trùng do thiếu check theo SĐT, đã thêm rule merge." },
+      { id: "cl_ntx2", date: "2026-05-15", version: "1.1", type: "improvement", status: "review",   impact: "low",    author: "Lê Thu Hà",       featureId: "",          title: "Bổ sung trường Mã số thuế trên Lead",         desc: "Theo yêu cầu khách để xuất hoá đơn B2B nhanh hơn." },
+      { id: "cl_ntx1", date: "2026-04-16", version: "1.0", type: "config",      status: "approved", impact: "medium", author: "Nguyễn Ngọc Anh", featureId: "",          title: "Setup môi trường & cấu hình công ty",         desc: "Khởi tạo database, company, users, phân quyền cơ bản." }
+    ],
+    notes: [
+      { id: "note_ntx1", title: "Lưu ý khi go-live",  content: "Chốt tồn kho 5 showroom trước 23h59 ngày 20/6 để tránh lệch số khi chuyển hệ thống.", color: "yellow", pinned: true,  updatedAt: "2026-06-10T09:00" },
+      { id: "note_ntx2", title: "Liên hệ khẩn",       content: "Anh Đức (IT khách hàng) — 090xxxxxxx — xử lý sự cố mạng/server tại showroom.",         color: "blue",   pinned: false, updatedAt: "2026-05-20T14:00" }
+    ]
+  },
+  {
+    id: "proj_mt",
+    client: "Dược Phẩm Minh Tâm",
+    industry: "Dược phẩm & Y tế",
+    name: "Vận hành Odoo Kế toán & Kho",
+    status: "operation",
+    startDate: "2025-11-01",
+    endDate: "2026-02-28",
+    color: "#5BAA50",
+    description: "Đã go-live module Kế toán + Kho cho 3 chi nhánh, hiện đang trong giai đoạn hỗ trợ vận hành.",
+    updatedAt: "2026-05-02",
+    tasks: [
+      { id: "t_mt1", name: "Hỗ trợ đóng sổ kế toán tháng 4", done: true },
+      { id: "t_mt2", name: "Đánh giá nhu cầu mở rộng module Purchase", done: false }
+    ],
+    timeline: [
+      { id: "tl_mt1", title: "Triển khai Kế toán & Kho", start: "2025-11-01", end: "2026-01-15", progress: 100, type: "phase",
+        children: [
+          { id: "tl_mt1a", title: "Go-live chi nhánh Q1, Q3, Thủ Đức", start: "2026-01-15", end: "2026-01-15", progress: 100, type: "milestone", children: [] }
+        ] },
+      { id: "tl_mt2", title: "Hỗ trợ vận hành", start: "2026-01-16", end: "2026-02-28", progress: 100, type: "phase", children: [] },
+      { id: "tl_mt3", title: "Đánh giá mở rộng Purchase", start: "2026-06-01", end: "2026-06-30", progress: 0, type: "future", children: [] }
+    ],
+    features: [
+      { id: "feat_mt1", name: "Đóng sổ kế toán cuối tháng",   status: "done",     assignee: "Ngọc Anh", parentId: null, linkedFeature: null },
+      { id: "feat_mt2", name: "Kiểm kê kho định kỳ 3 chi nhánh", status: "done",  assignee: "Minh Quân", parentId: null, linkedFeature: null },
+      { id: "feat_mt3", name: "Mở rộng module Purchase",      status: "pending",  assignee: "",         parentId: null, linkedFeature: null }
+    ],
+    members: [
+      { id: "mem_mt1", name: "Nguyễn Ngọc Anh", type: "internal", role: "Consultant trưởng", projectRole: "Account Manager", phone: "0901234567", email: "ngocanh@company.vn", supportPlatform: "zalo", supportLink: "" },
+      { id: "mem_mt2", name: "Trần Minh Quân",  type: "internal", role: "Odoo Developer",    projectRole: "Hỗ trợ kỹ thuật", phone: "0912345678", email: "quan.tran@company.vn", supportPlatform: "zalo", supportLink: "" }
+    ],
+    chatGroups: [
+      { id: "grp_mt1", name: "Minh Tâm — Hỗ trợ vận hành", platform: "zalo", description: "Nhóm hỗ trợ nhanh sau go-live", memberCount: 6, link: "" }
+    ],
+    docs: [
+      { id: "doc_mt1", name: "Hợp đồng dịch vụ vận hành 2026", link: "https://drive.google.com/", type: "contract", addedBy: "Nguyễn Ngọc Anh", updatedAt: "2025-11-01", parentId: null },
+      { id: "doc_mt2", name: "Báo cáo go-live", link: "https://docs.google.com/document/", type: "report", addedBy: "Trần Minh Quân", updatedAt: "2026-01-16", parentId: null }
+    ],
+    changelog: [
+      { id: "cl_mt2", date: "2026-01-16", version: "1.0", type: "feature", status: "approved", impact: "high", author: "Trần Minh Quân", featureId: "feat_mt2", title: "Go-live Kế toán & Kho 3 chi nhánh", desc: "Chuyển đổi chính thức, ngừng dùng Excel." },
+      { id: "cl_mt1", date: "2025-11-05", version: "0.1", type: "config", status: "approved", impact: "medium", author: "Nguyễn Ngọc Anh", featureId: "", title: "Setup ban đầu", desc: "Khởi tạo company, kho, tài khoản kế toán theo TT200." }
+    ],
+    notes: [
+      { id: "note_mt1", title: "Chu kỳ hỗ trợ", content: "SLA phản hồi trong 4h giờ hành chính theo hợp đồng vận hành.", color: "green", pinned: true, updatedAt: "2026-05-02T10:00" }
+    ]
+  }
+];
+
 /* ── Notebooks (top-level containers) ── */
 export const SEED_DATA = {
   notebooks: [

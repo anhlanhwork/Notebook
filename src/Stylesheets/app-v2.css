@@ -25,6 +25,7 @@
   cursor: pointer;
 }
 .bc-link:hover { color: var(--blue); text-decoration: underline; }
+.bc-back-ic { font-size: 12px; }
 
 /* ═══════════════════════════════════════════════════════════
    MODULE LIST SCREEN

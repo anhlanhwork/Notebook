@@ -11,6 +11,7 @@ export function Breadcrumb({ items, tier = 't1' }) {
           {i > 0 && <i className="ti ti-chevron-right bc-sep"></i>}
           {x.onClick ? (
             <button className={'bc-item bc-link' + (i === items.length - 1 ? ' bc-item--active' : '')} onClick={x.onClick}>
+              {i === 0 && <i className="ti ti-arrow-left bc-back-ic"></i>}
               {x.label}
             </button>
           ) : (
