@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { showConfirm } from './dialog.jsx';
 import { CInput, CTextarea } from './ui/CInput.jsx';
+import { Breadcrumb } from './breadcrumb.jsx';
 
 const STORAGE_KEY = 'exp_v2';
 
@@ -343,9 +344,10 @@ function ExperienceEditor({ item, onUpdate, onBack, onDelete }) {
 
       {/* Topbar */}
       <div className="exp-editor-topbar">
-        <button className="exp-editor-back" onClick={onBack}>
-          <i className="ti ti-arrow-left"/> Kinh nghiệm
-        </button>
+        <Breadcrumb tier="t1" items={[
+          { label: 'Kinh nghiệm', onClick: onBack },
+          { label: item.title || 'Chưa có tiêu đề' }
+        ]} />
         <div className="exp-editor-topbar-right">
           <span className="exp-card-cat-badge" style={{ color: cat.color, background: cat.bg }}>
             <i className={'ti ' + cat.icon}/> {cat.label}

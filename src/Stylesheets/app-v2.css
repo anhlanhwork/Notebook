@@ -18,26 +18,6 @@
 .tb-crumb-btn:hover { background: var(--bg2); color: var(--text); }
 .tb-crumb-btn i { font-size: 13px; }
 
-/* ─── Sidebar — breadcrumb ─── */
-.sb-breadcrumb {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 2px;
-  width: 100%; padding: 7px 12px;
-  border-bottom: 0.5px solid var(--border);
-  background: var(--bg);
-  flex-shrink: 0; box-sizing: border-box;
-}
-.sb-bc-btn {
-  background: none; border: none; padding: 0 2px;
-  font-family: inherit; font-size: 11px;
-  color: var(--text3); cursor: pointer;
-  white-space: nowrap;
-}
-.sb-bc-btn:hover { color: var(--blue); text-decoration: underline; }
-.sb-bc-sep { font-size: 9px; color: var(--text3); opacity: 0.5; }
-
-/* kept for any legacy ref */
-.sb-back { display: none; }
-
 /* ─── Breadcrumb links ─── */
 .bc-link {
   background: none; border: none; padding: 0;
@@ -45,13 +25,6 @@
   cursor: pointer;
 }
 .bc-link:hover { color: var(--blue); text-decoration: underline; }
-.bc-link--active {
-  color: var(--blue);
-  font-weight: 600;
-  cursor: default;
-  pointer-events: none;
-}
-.bc-link--active:hover { text-decoration: none; }
 
 /* ═══════════════════════════════════════════════════════════
    MODULE LIST SCREEN
@@ -4878,14 +4851,6 @@
   background: var(--bg); border-bottom: 0.5px solid var(--border);
   flex-shrink: 0;
 }
-.pd-back {
-  display: inline-flex; align-items: center; gap: 7px;
-  background: none; border: none; padding: 0;
-  font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text2);
-  cursor: pointer; transition: color 0.13s;
-}
-.pd-back:hover { color: var(--blue); }
-.pd-back i { font-size: 14px; }
 .pd-topbar-right {
   display: flex; align-items: center; gap: 7px;
   font-size: 12.5px; color: var(--text3);
@@ -6858,11 +6823,6 @@
   display: flex; align-items: center; justify-content: space-between; padding: 10px 20px;
   background: var(--bg); border-bottom: 0.5px solid var(--border); flex-shrink: 0;
 }
-.exp-editor-back {
-  display: inline-flex; align-items: center; gap: 7px; background: none; border: none; padding: 0;
-  font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer;
-}
-.exp-editor-back:hover { color: var(--text); }
 .exp-editor-topbar-right { display: flex; align-items: center; gap: 8px; }
 .exp-editor-del {
   display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;
@@ -6994,14 +6954,6 @@
   display: flex; align-items: center; gap: 6px;
   margin-bottom: 16px; font-size: 12px;
 }
-.af-bc-btn {
-  font-size: 12px; color: var(--text3);
-  background: none; border: none; padding: 0; cursor: pointer; font-family: inherit;
-}
-.af-bc-btn:hover { color: var(--blue); text-decoration: underline; }
-.af-bc-sep { font-size: 11px; color: var(--text3); opacity: 0.5; }
-.af-bc-cur { font-size: 12px; color: var(--text2); font-weight: 500; }
-
 .af-hero-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
 .af-hero-left { display: flex; flex-direction: column; gap: 4px; }
 .af-title {

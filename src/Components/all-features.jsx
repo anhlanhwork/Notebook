@@ -1,6 +1,7 @@
 /* All-features aggregation screen — shows every feature across all notebooks/modules */
 
 import React, { useState, useMemo } from 'react';
+import { Breadcrumb } from './breadcrumb.jsx';
 
 function AllFeaturesScreen({ data, onOpenFeature, onBack }) {
   const [query,    setQuery]    = useState('');
@@ -59,9 +60,10 @@ function AllFeaturesScreen({ data, onOpenFeature, onBack }) {
 
           {/* Breadcrumb */}
           <div className="af-hero-nav">
-            <button className="bc-link af-bc-btn" onClick={onBack}>Thư viện sổ tay</button>
-            <i className="ti ti-chevron-right af-bc-sep"/>
-            <span className="af-bc-cur">Tổng hợp tính năng</span>
+            <Breadcrumb tier="t1" items={[
+              { label: 'Thư viện sổ tay', onClick: onBack },
+              { label: 'Tổng hợp tính năng' }
+            ]} />
           </div>
 
           {/* Title */}

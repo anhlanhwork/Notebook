@@ -133,6 +133,17 @@ function App() {
       return;
     }
 
+    /* Demo mode: bỏ qua Firestore hoàn toàn, nạp thẳng dữ liệu mẫu vào bộ nhớ */
+    if (user.isDemo) {
+      migrationDoneRef.current = true;
+      setData(SEED_DATA);
+      setProjects([]);
+      dataLoadedRef.current = true;
+      setDataLoaded(true);
+      resolveUrl(SEED_DATA.notebooks);
+      return;
+    }
+
     /* User is logged in — subscribe to their notebooks */
     const unsub = subscribeNotebooks(user.uid, async (notebooks) => {
       /* One-time migration: Firestore trống → seed từ localStorage */
@@ -229,6 +240,7 @@ function App() {
   /* ── Save to Firestore ── */
   async function save() {
     if (!user) return;
+    if (user.isDemo) { setSaveState({ kind: "saved", at: nowHHMM() }); return; }
     clearTimeout(saveTimerRef.current);
     setSaveState({ kind: "saving" });
     try {
@@ -252,7 +264,7 @@ function App() {
       .filter(nb => !newData.notebooks.some(n => n.id === nb.id))
       .map(nb => nb.id);
     setData(newData);
-    if (user && deletedIds.length > 0) {
+    if (user && !user.isDemo && deletedIds.length > 0) {
       deletedIds.forEach(id => removeNotebook(id).catch(console.error));
     }
   }
@@ -504,9 +516,6 @@ function App() {
             onAddFeature={addFeature}
             onRenameFeature={renameFeature}
             onDeleteFeature={deleteFeature}
-            onBackToModules={backToNotebook}
-            notebook={activeNotebook}
-            onBackToHome={backToHome}
           />
           <Editor
             mod={activeMod}
@@ -607,10 +616,15 @@ function App() {
             initialDetailProjId={projReturnCtx?.projId}
             onDetailRestored={() => setProjReturnCtx(null)}
             onUpsert={async p => {
+              if (user.isDemo) {
+                setProjects(prev => prev.some(x => x.id === p.id) ? prev.map(x => x.id === p.id ? p : x) : [...prev, p]);
+                return;
+              }
               try { await upsertProject(user.uid, p); }
               catch (e) { showToast('Lỗi lưu dự án – kiểm tra Firestore rules'); console.error(e); }
             }}
             onRemove={async id => {
+              if (user.isDemo) { setProjects(prev => prev.filter(x => x.id !== id)); return; }
               try { await removeProject(id); }
               catch (e) { showToast('Lỗi xóa dự án – kiểm tra Firestore rules'); console.error(e); }
             }}
@@ -646,6 +660,7 @@ function App() {
           <TweakButton label="Reset về dữ liệu mẫu" onClick={async () => {
             if (!await showConfirm("Reset toàn bộ về dữ liệu mẫu? Xoá tất cả sổ tay hiện tại.")) return;
             if (!user) return;
+            if (user.isDemo) { setData(SEED_DATA); return; }
             await Promise.all(data.notebooks.map(nb => removeNotebook(nb.id)));
             await Promise.all(SEED_DATA.notebooks.map(nb => upsertNotebook(user.uid, nb)));
           }} />

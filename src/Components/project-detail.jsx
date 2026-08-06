@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { showConfirm } from './dialog.jsx';
 import { CInput, CTextarea } from './ui/CInput.jsx';
+import { Breadcrumb } from './breadcrumb.jsx';
 
 const PROJ_STATUS = {
   contract:  { label: 'Ký hợp đồng', dot: '#8B5CF6', color: '#7C3AED', bg: 'rgba(139,92,246,0.12)',  border: 'rgba(139,92,246,0.4)'  },
@@ -247,9 +248,10 @@ export function ProjectDetailScreen({ proj, onBack, onUpsert, onEdit, onRemove, 
 
       {/* ── Top bar ── */}
       <div className="pd-topbar">
-        <button className="pd-back" onClick={onBack}>
-          <i className="ti ti-arrow-left"/> Tất cả dự án
-        </button>
+        <Breadcrumb tier="t1" items={[
+          { label: 'Dự án', onClick: onBack },
+          { label: proj.client || proj.name || 'Chi tiết' }
+        ]} />
         <div className="pd-topbar-right">
           {code && <span className="pd-topbar-code">{code}</span>}
           {(code && proj.industry) && <span className="pd-topbar-sep">·</span>}

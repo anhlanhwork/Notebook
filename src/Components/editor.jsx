@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BPMNFlow } from './bpmn.jsx';
 import { ERDModels } from './erd.jsx';
 import { showConfirm, showPrompt } from './dialog.jsx';
 import { CInput, CTextarea } from './ui/CInput.jsx';
+import { Breadcrumb } from './breadcrumb.jsx';
 
 export const FEATURE_TABS = [
   { key: "models",       label: "Models",             icon: "ti-table" },
@@ -754,26 +755,6 @@ function MarkdownLite({ text }) {
   return <div className="md">{out}</div>;
 }
 
-/* ── Breadcrumb ── */
-function Breadcrumb({ items }) {
-  return (
-    <div className="bc">
-      {items.map((x, i) => (
-        <React.Fragment key={i}>
-          {i > 0 && <i className="ti ti-chevron-right bc-sep"></i>}
-          {x.onClick ? (
-            <button className={"bc-item bc-link" + (i === items.length - 1 ? " bc-active" : "")} onClick={x.onClick}>
-              {x.label}
-            </button>
-          ) : (
-            <span className={"bc-item" + (i === items.length - 1 ? " bc-active" : "")}>{x.label}</span>
-          )}
-        </React.Fragment>
-      ))}
-    </div>
-  );
-}
-
 /* ── MultiFlowEditor ── */
 function MultiFlowEditor({ flows = [], onChange, accent, emptyHint }) {
   const [activeId, setActiveId] = useState(flows[0]?.id || null);
@@ -1477,7 +1458,7 @@ export function Editor({ mod, setMod, selection, accent, onSave, saveState, onBa
             <i className="ti ti-arrow-left"/> {returnContext.label}
           </button>
         )}
-        <Breadcrumb items={bcrumb} />
+        <Breadcrumb items={bcrumb} tier="t2" />
         <h1 className="ed-title">{headerTitle}</h1>
       </div>
 

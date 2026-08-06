@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ShareModal } from './share-modal.jsx';
 import { showConfirm } from './dialog.jsx';
 import { CInput } from './ui/CInput.jsx';
+import { Breadcrumb } from './breadcrumb.jsx';
 
 const STATUS_META = {
   pending:  { label: "Chưa bắt đầu",   color: "var(--text3)",   bg: "var(--bg3)"     },
@@ -119,11 +120,10 @@ function ModuleListScreen({ notebook, setNotebook, onOpen, onBack }) {
       <div className="ml-hero">
         <div className="ml-hero-inner">
           <div className="ml-hero-nav">
-            <div className="bc-t1">
-              <button className="bc-item bc-link" onClick={onBack}>Thư viện sổ tay</button>
-              <i className="ti ti-chevron-right bc-sep"></i>
-              <span className="bc-item bc-item--active">{notebook.name}</span>
-            </div>
+            <Breadcrumb tier="t1" items={[
+              { label: 'Thư viện sổ tay', onClick: onBack },
+              { label: notebook.name }
+            ]} />
           </div>
 
           <div className="ml-hero-top">

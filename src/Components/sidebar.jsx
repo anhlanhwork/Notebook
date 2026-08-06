@@ -2,16 +2,9 @@
    Per the spec, sub-sections (Models / Luồng / etc.) do NOT appear here —
    they're tabs inside each feature page. */
 
-function Sidebar({ mod, selection, onSelect, onAddFeature, onRenameFeature, onDeleteFeature, onBackToModules, notebook, onBackToHome }) {
+function Sidebar({ mod, selection, onSelect, onAddFeature, onRenameFeature, onDeleteFeature }) {
   return (
     <aside className="sb">
-      <div className="sb-breadcrumb">
-        <button className="sb-bc-btn" onClick={onBackToHome}>Thư viện sổ tay</button>
-        {notebook && <>
-          <i className="ti ti-chevron-right sb-bc-sep"></i>
-          <button className="sb-bc-btn" onClick={onBackToModules}>{notebook.name}</button>
-        </>}
-      </div>
       <div className="sb-modhd">
         <div className="sb-modhd-dot" style={{ background: mod.color }}></div>
         <div className="sb-modhd-name">{mod.name}</div>

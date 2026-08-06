@@ -4,6 +4,11 @@ import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from
 
 const AuthContext = createContext(null);
 
+/* TODO(demo): luồng Firebase đang bị tắt tạm để demo nhanh không cần đăng nhập
+   Google thật. Đổi lại thành false để bật lại đăng nhập Google bình thường. */
+const DEMO_MODE = true;
+const DEMO_USER = { uid: 'demo', displayName: 'Demo', email: 'demo@local', photoURL: null, isDemo: true };
+
 export function AuthProvider({ children }) {
   const [user,      setUser]      = useState(undefined);
   const [authError, setAuthError] = useState(null);
@@ -16,6 +21,10 @@ export function AuthProvider({ children }) {
 
   async function signInGoogle() {
     setAuthError(null);
+    if (DEMO_MODE) {
+      setUser(DEMO_USER);
+      return;
+    }
     try {
       await signInWithPopup(auth, new GoogleAuthProvider());
     } catch (e) {
@@ -25,13 +34,18 @@ export function AuthProvider({ children }) {
     }
   }
 
+  function logout() {
+    if (user?.isDemo) { setUser(null); return; }
+    return signOut(auth);
+  }
+
   return (
     <AuthContext.Provider value={{
       user,
       loading: user === undefined,
       authError,
       signInGoogle,
-      logout: () => signOut(auth)
+      logout
     }}>
       {children}
     </AuthContext.Provider>

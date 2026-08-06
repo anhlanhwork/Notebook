@@ -167,14 +167,243 @@ export const ACCOUNT = emptyModule({
   ]
 });
 
-export const CRM = emptyModule({
-  id: "mod_crm", name: "CRM", tech: "crm",
-  color: "#D4537E", status: "pending", updatedAt: "—",
-  category: "Quan hệ KH", depends: "base, mail, sales_team",
-  menu: "CRM ▸ Sales ▸ My Pipeline",
-  purpose: "Quản lý lead → opportunity → won. Kanban pipeline, scoring, activity reminder.",
-  features: []
-});
+export const CRM = {
+  id: "mod_crm",
+  name: "CRM",
+  tech: "crm",
+  color: "#D4537E",
+  status: "studying",
+  updatedAt: "2026-05-20",
+  overview: {
+    version: "18.0",
+    category: "Quan hệ KH",
+    depends: "base, mail, sales_team, utm, calendar",
+    menu: "CRM ▸ Sales ▸ My Pipeline",
+    purpose:
+      "Quản lý toàn bộ vòng đời khách hàng tiềm năng từ Lead → Opportunity → Won/Lost. Hợp nhất model crm.lead cho cả 2 giai đoạn (type = lead/opportunity), pipeline dạng Kanban theo crm.stage, gán Sales Team/Sales Person tự động, và nhắc lịch hoạt động (mail.activity). Khi chốt deal (Won) có thể sinh thẳng báo giá bên module Sales."
+  },
+  mainFlows: [
+    {
+      id: "mf_crm_1",
+      name: "Lead → Cơ hội → Chốt deal",
+      nodes: [
+        { id: "n1", type: "start",    label: "Lead mới vào hệ thống",              x: 60,   y: 160 },
+        { id: "n2", type: "task",     label: "Gán Sales Team & Sales Person",       x: 280,  y: 160 },
+        { id: "n3", type: "gateway",  label: "Đủ điều kiện?",                       x: 520,  y: 160 },
+        { id: "n9", type: "end",      label: "Loại bỏ (Junk)",                      x: 520,  y: 320 },
+        { id: "n4", type: "task",     label: "Convert → Opportunity",               x: 740,  y: 60  },
+        { id: "n5", type: "task",     label: "Theo dõi Pipeline (Kanban)",          x: 960,  y: 60  },
+        { id: "n6", type: "gateway",  label: "Chốt được?",                          x: 1180, y: 60  },
+        { id: "n7", type: "end",      label: "Won — Tạo báo giá bên Sales",         x: 1400, y: 0   },
+        { id: "n8", type: "end",      label: "Lost — Ghi lý do",                    x: 1400, y: 140  }
+      ],
+      edges: [
+        { id: "e1", from: "n1", to: "n2", label: "" },
+        { id: "e2", from: "n2", to: "n3", label: "" },
+        { id: "e3", from: "n3", to: "n4", label: "Có" },
+        { id: "e4", from: "n3", to: "n9", label: "Không" },
+        { id: "e5", from: "n4", to: "n5", label: "" },
+        { id: "e6", from: "n5", to: "n6", label: "" },
+        { id: "e7", from: "n6", to: "n7", label: "Thắng" },
+        { id: "e8", from: "n6", to: "n8", label: "Thua" }
+      ]
+    }
+  ],
+  features: [
+    {
+      id: "f_crm_1",
+      name: "Thu thập & Phân loại Lead",
+      desc: "Nhận lead từ nhiều nguồn, tự động gán Sales Team",
+      models: {
+        cards: [
+          {
+            id: "mc_crmlead", name: "crm.lead", color: "#D4537E", x: 40, y: 40, width: 320,
+            fields: [
+              { name: "name",             type: "Char",      desc: "Tên cơ hội / Lead",     req: true },
+              { name: "type",             type: "Selection", desc: "lead / opportunity",     req: true },
+              { name: "partner_id",       type: "Many2one",  desc: "Khách hàng liên quan",   relTo: "mc_partner" },
+              { name: "contact_name",     type: "Char",      desc: "Tên người liên hệ" },
+              { name: "email_from",       type: "Char",      desc: "Email" },
+              { name: "phone",            type: "Char",      desc: "Điện thoại" },
+              { name: "source_id",        type: "Many2one",  desc: "Nguồn (utm.source)",     relTo: "mc_source" },
+              { name: "team_id",          type: "Many2one",  desc: "Sales Team phụ trách",   req: true, relTo: "mc_team" },
+              { name: "user_id",          type: "Many2one",  desc: "Sales Person" },
+              { name: "stage_id",         type: "Many2one",  desc: "Giai đoạn pipeline" },
+              { name: "probability",      type: "Float",     desc: "% xác suất chốt" },
+              { name: "expected_revenue", type: "Monetary",  desc: "Doanh thu dự kiến" }
+            ]
+          },
+          {
+            id: "mc_team", name: "crm.team", color: "#378ADD", x: 440, y: 40, width: 300,
+            fields: [
+              { name: "name",       type: "Char",     desc: "Tên Sales Team",             req: true },
+              { name: "member_ids", type: "Many2many",desc: "Thành viên trong team" },
+              { name: "use_leads",  type: "Boolean",  desc: "Bật luồng Lead riêng (2 bước)" }
+            ]
+          },
+          {
+            id: "mc_source", name: "utm.source", color: "#F59E0B", x: 440, y: 260, width: 300,
+            fields: [
+              { name: "name", type: "Char", desc: "Nguồn: Website/Facebook Ads/Zalo/Referral…", req: true }
+            ]
+          },
+          {
+            id: "mc_partner", name: "res.partner", color: "#7C3AED", x: 40, y: 340, width: 300,
+            fields: [
+              { name: "name",  type: "Char", desc: "Tên khách hàng / công ty", req: true },
+              { name: "email", type: "Char", desc: "Email" },
+              { name: "phone", type: "Char", desc: "SĐT" }
+            ]
+          }
+        ]
+      },
+      flows: [
+        {
+          id: "fl_crm_1",
+          name: "Hợp nhất Lead từ nhiều nguồn",
+          nodes: [
+            { id: "fn1", type: "start_message", label: "Website Form",                  x: 40,  y: 20  },
+            { id: "fn2", type: "start_message", label: "Email đến",                     x: 40,  y: 140 },
+            { id: "fn3", type: "start",         label: "Nhập tay (Call/Sự kiện)",        x: 40,  y: 260 },
+            { id: "fn4", type: "task",          label: "Tạo crm.lead (type = lead)",     x: 280, y: 140 },
+            { id: "fn5", type: "gateway",       label: "Có rule Team?",                  x: 520, y: 140 },
+            { id: "fn6", type: "task",          label: "Auto-assign theo Team rule",     x: 760, y: 40  },
+            { id: "fn7", type: "user_task",     label: "Sales Manager gán thủ công",     x: 760, y: 240 },
+            { id: "fn8", type: "end",           label: "Lead sẵn sàng trong Pipeline",   x: 1000,y: 140 }
+          ],
+          edges: [
+            { id: "fe1", from: "fn1", to: "fn4", label: "" },
+            { id: "fe2", from: "fn2", to: "fn4", label: "" },
+            { id: "fe3", from: "fn3", to: "fn4", label: "" },
+            { id: "fe4", from: "fn4", to: "fn5", label: "" },
+            { id: "fe5", from: "fn5", to: "fn6", label: "Có" },
+            { id: "fe6", from: "fn5", to: "fn7", label: "Không" },
+            { id: "fe7", from: "fn6", to: "fn8", label: "" },
+            { id: "fe8", from: "fn7", to: "fn8", label: "" }
+          ]
+        }
+      ],
+      detailBlocks: [
+        {
+          id: "db_c1", icon: "ti-target", title: "Mục đích & Phạm vi",
+          content: "<p>Gom mọi đầu mối khách hàng tiềm năng (website, email, gọi điện, sự kiện, quảng cáo) về một chỗ duy nhất — <code>crm.lead</code>.</p><p>Áp dụng cho cả mô hình <b>1 bước</b> (Lead = Opportunity luôn) và <b>2 bước</b> (bật <code>use_leads</code> trên Team để có hàng chờ duyệt Lead trước khi convert).</p>"
+        },
+        {
+          id: "db_c2", icon: "ti-list-numbers", title: "Thao tác chính",
+          content: "<ol><li>Lead vào hệ thống (form web, alias email, hoặc tạo tay) — trạng thái <code>type = lead</code></li><li>Hệ thống match <b>Team rule</b> theo từ khoá/khu vực để auto-gán <code>team_id</code> + <code>user_id</code></li><li>Sales Person xem chi tiết, gọi xác nhận nhu cầu</li><li>Nếu đủ điều kiện → bấm <b>Convert to Opportunity</b> → sinh <code>stage_id</code> đầu tiên trong pipeline</li><li>Nếu không phù hợp → đánh dấu <b>Lost</b> ngay từ giai đoạn Lead (junk)</li></ol>"
+        },
+        {
+          id: "db_c3", icon: "ti-gavel", title: "Quy tắc nghiệp vụ",
+          content: "<ul><li>Trùng lead (cùng email/SĐT trong 30 ngày) → hệ thống cảnh báo <mark style='background:#FEF08A'>duplicate lead</mark>, gợi ý merge</li><li><code>probability</code> mặc định lấy theo cấu hình % của <code>stage_id</code>, có thể override tay</li><li>Lead không có hoạt động (activity) quá 15 ngày sẽ bị gắn cờ <b>Lead nguội</b> trên Kanban</li></ul>"
+        }
+      ],
+      integrations: [
+        { id: "int_c1", module: "website", icon: "ti-world", color: "#0891B2", direction: "in",
+          content: "<p>Form \"Liên hệ\" / \"Đăng ký demo\" trên website tạo thẳng <code>crm.lead</code> qua controller <code>website_crm</code>.</p><p>UTM (<code>source_id</code>, <code>medium_id</code>, <code>campaign_id</code>) được tự động gắn từ query string của landing page.</p>" },
+        { id: "int_c2", module: "mail", icon: "ti-mail", color: "#2563EB", direction: "in",
+          content: "<p>Email gửi tới alias catch-all (vd <code>sales@company.com</code>) được <code>mail.gateway</code> parse thành lead mới, đính kèm file làm attachment.</p>" },
+        { id: "int_c3", module: "sales_team", icon: "ti-users", color: "#378ADD", direction: "bidi",
+          content: "<p>Team rule (dựa trên khu vực / từ khoá / round-robin) quyết định <code>team_id</code> + <code>user_id</code> khi lead vào.</p><p>Ngược lại, số liệu lead/opportunity theo team hiển thị trên Team Dashboard.</p>" },
+        { id: "int_c4", module: "sale", icon: "ti-shopping-cart", color: "#5BAA50", direction: "out",
+          content: "<p>Khi Opportunity chuyển sang giai đoạn <code>is_won = true</code>, có thể bấm <b>New Quotation</b> để tạo thẳng <code>sale.order</code> với <code>partner_id</code> kế thừa từ Lead.</p>" }
+      ],
+      notes: "",
+      cases: [
+        {
+          id: "cs_c1",
+          title: "Lead từ website không tự gán Sales Team",
+          status: "resolved",
+          chatLink: "",
+          description: "Lead tạo từ form website luôn rơi vào Team mặc định (\"Website\") thay vì đúng team khu vực, dù đã cấu hình Team Rule theo từ khoá.",
+          images: [],
+          cause: "Team Rule dùng field 'Assignment Domain' nhưng lead từ website không set sẵn trường được domain filter tới (vd. state_id), nên rule không khớp và rơi về default.",
+          resolution: "Sửa Assignment Domain để không phụ thuộc field trống khi tạo từ web (thêm điều kiện OR chấp nhận rỗng), hoặc yêu cầu form web bắt buộc nhập Tỉnh/Thành trước khi submit."
+        }
+      ]
+    },
+    {
+      id: "f_crm_2",
+      name: "Quản lý Pipeline cơ hội (Kanban)",
+      desc: "Theo dõi cơ hội theo từng giai đoạn, dự báo doanh thu",
+      models: {
+        cards: [
+          {
+            id: "mc_stage", name: "crm.stage", color: "#F59E0B", x: 40, y: 40, width: 300,
+            fields: [
+              { name: "name",     type: "Char",     desc: "Tên giai đoạn: New/Qualified/Proposition/Won", req: true },
+              { name: "sequence", type: "Integer",  desc: "Thứ tự hiển thị trên Kanban" },
+              { name: "is_won",   type: "Boolean",  desc: "Đánh dấu đây là giai đoạn Thắng" },
+              { name: "team_id",  type: "Many2one", desc: "Giới hạn giai đoạn theo Team (nếu có)" }
+            ]
+          },
+          {
+            id: "mc_lead2", name: "crm.lead", color: "#D4537E", x: 400, y: 40, width: 320,
+            fields: [
+              { name: "stage_id",        type: "Many2one",  desc: "Giai đoạn hiện tại", relTo: "mc_stage" },
+              { name: "probability",     type: "Float",     desc: "% xác suất chốt (auto theo stage)" },
+              { name: "expected_revenue",type: "Monetary",  desc: "Doanh thu dự kiến" },
+              { name: "date_deadline",   type: "Date",      desc: "Hạn chót dự kiến chốt" },
+              { name: "kanban_state",    type: "Selection", desc: "normal / done / blocked" },
+              { name: "lost_reason_id",  type: "Many2one",  desc: "Lý do Lost (bắt buộc nếu Lost)" }
+            ]
+          }
+        ]
+      },
+      flows: [],
+      detailBlocks: [
+        {
+          id: "db_c4", icon: "ti-layout-kanban", title: "Cách vận hành Kanban",
+          content: "<p>Mỗi cột là 1 <code>crm.stage</code>. Kéo-thả thẻ giữa các cột sẽ cập nhật <code>stage_id</code> và tự tính lại <code>probability</code> theo % cấu hình của stage đích.</p><p>Cột cuối (<code>is_won = true</code>) khi thả thẻ vào sẽ tự set <code>probability = 100</code> và khoá không cho kéo tiếp.</p>"
+        },
+        {
+          id: "db_c5", icon: "ti-chart-bar", title: "Dự báo doanh thu (Forecast)",
+          content: "<p>Doanh thu dự báo theo tháng = <code>Σ expected_revenue × probability%</code> của các opportunity đang mở, nhóm theo <code>date_deadline</code>.</p><p>Có thể lọc theo Team hoặc Sales Person để xem forecast riêng từng người.</p>"
+        }
+      ],
+      integrations: [
+        { id: "int_c5", module: "calendar", icon: "ti-calendar", color: "#EC4899", direction: "bidi",
+          content: "<p>Mỗi lần lên lịch hẹn/demo với khách trên Opportunity sẽ tạo <code>calendar.event</code> liên kết ngược qua <code>opportunity_id</code>.</p>" }
+      ],
+      notes: "",
+      cases: []
+    },
+    {
+      id: "f_crm_3",
+      name: "Lịch hoạt động & Nhắc nhở",
+      desc: "Đặt lịch gọi/email/họp, cảnh báo quá hạn",
+      models: {
+        cards: [
+          {
+            id: "mc_activity", name: "mail.activity", color: "#9CA3AF", x: 40, y: 40, width: 300,
+            fields: [
+              { name: "activity_type_id", type: "Many2one", desc: "Loại: Gọi điện/Email/Họp/Việc cần làm", req: true },
+              { name: "summary",          type: "Char",     desc: "Tóm tắt việc cần làm" },
+              { name: "date_deadline",    type: "Date",     desc: "Hạn hoàn thành", req: true },
+              { name: "user_id",          type: "Many2one", desc: "Người phụ trách" },
+              { name: "res_id",           type: "Integer",  desc: "ID bản ghi crm.lead liên quan" }
+            ]
+          }
+        ]
+      },
+      flows: [],
+      detailBlocks: [
+        {
+          id: "db_c6", icon: "ti-bell", title: "Nhắc nhở & cảnh báo trễ hạn",
+          content: "<p>Lead/Opportunity quá hạn hoạt động (activity <code>date_deadline</code> < hôm nay) sẽ hiện chấm đỏ trên thẻ Kanban và trong mục <b>Hoạt động của tôi</b>.</p>"
+        }
+      ],
+      integrations: [],
+      notes: "Cân nhắc bật email nhắc nhở hằng ngày (digest) cho Sales Person có activity quá hạn — hiện chỉ hiện trên UI, chưa có email tự động.",
+      cases: []
+    },
+    { id: "f_crm_4", name: "Chốt deal & Chuyển thành đơn hàng", desc: "Won → tạo báo giá bên Sales, đóng Opportunity", models: { cards: [] }, flows: [], detailBlocks: [], integrations: [], notes: "" }
+  ],
+  changelog: [
+    { id: "cl_crm1", date: "2026-05-20", version: "0.3", type: "feature",     status: "approved", author: "Lan Anh", featureId: "f_crm_1", title: "Thêm luồng phân loại & gán Sales Team tự động", desc: "Bổ sung gateway kiểm tra điều kiện đủ tiêu chuẩn trước khi convert Lead → Opportunity, kèm sơ đồ hợp nhất lead từ nhiều nguồn." },
+    { id: "cl_crm2", date: "2026-05-14", version: "0.2", type: "improvement",status: "approved", author: "Lan Anh", featureId: "f_crm_2", title: "Chuẩn hoá field lost_reason_id",                     desc: "Bắt buộc chọn lý do khi đánh dấu Lost để phục vụ báo cáo lý do mất khách." },
+    { id: "cl_crm3", date: "2026-05-08", version: "0.1", type: "feature",     status: "approved", author: "Lan Anh", featureId: "",         title: "Khởi tạo module CRM",                              desc: "Research sơ bộ menu, model chính (crm.lead, crm.stage, crm.team) và vẽ luồng chính Lead → Won." }
+  ]
+};
 
 export const HR = emptyModule({
   id: "mod_hr", name: "HR", tech: "hr",
