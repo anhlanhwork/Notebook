@@ -173,7 +173,7 @@ export const CRM = {
   tech: "crm",
   color: "#D4537E",
   status: "studying",
-  updatedAt: "2026-05-20",
+  updatedAt: "2026-05-25",
   overview: {
     version: "18.0",
     category: "Quan hệ KH",
@@ -307,7 +307,7 @@ export const CRM = {
         { id: "int_c4", module: "sale", icon: "ti-shopping-cart", color: "#5BAA50", direction: "out",
           content: "<p>Khi Opportunity chuyển sang giai đoạn <code>is_won = true</code>, có thể bấm <b>New Quotation</b> để tạo thẳng <code>sale.order</code> với <code>partner_id</code> kế thừa từ Lead.</p>" }
       ],
-      notes: "",
+      notes: "Cân nhắc thêm bước gọi API check trùng số điện thoại/email ngay tại form website, thay vì để hệ thống cảnh báo duplicate sau khi lead đã tạo.",
       cases: [
         {
           id: "cs_c1",
@@ -349,7 +349,28 @@ export const CRM = {
           }
         ]
       },
-      flows: [],
+      flows: [
+        {
+          id: "fl_crm_2",
+          name: "Tự động hoá khi đổi giai đoạn",
+          nodes: [
+            { id: "gn1", type: "start",   label: "User kéo thẻ sang cột mới",              x: 40,  y: 140 },
+            { id: "gn2", type: "task",    label: "Cập nhật stage_id + probability",         x: 280, y: 140 },
+            { id: "gn3", type: "gateway", label: "Stage = Won?",                            x: 520, y: 140 },
+            { id: "gn4", type: "task",    label: "Set probability=100%, khoá kéo tiếp",     x: 760, y: 40  },
+            { id: "gn5", type: "task",    label: "Log hoạt động \"Đổi giai đoạn\"",         x: 760, y: 240 },
+            { id: "gn6", type: "end",     label: "Pipeline cập nhật",                       x: 1000,y: 140 }
+          ],
+          edges: [
+            { id: "ge1", from: "gn1", to: "gn2", label: "" },
+            { id: "ge2", from: "gn2", to: "gn3", label: "" },
+            { id: "ge3", from: "gn3", to: "gn4", label: "Có" },
+            { id: "ge4", from: "gn3", to: "gn5", label: "Không" },
+            { id: "ge5", from: "gn4", to: "gn6", label: "" },
+            { id: "ge6", from: "gn5", to: "gn6", label: "" }
+          ]
+        }
+      ],
       detailBlocks: [
         {
           id: "db_c4", icon: "ti-layout-kanban", title: "Cách vận hành Kanban",
@@ -364,8 +385,19 @@ export const CRM = {
         { id: "int_c5", module: "calendar", icon: "ti-calendar", color: "#EC4899", direction: "bidi",
           content: "<p>Mỗi lần lên lịch hẹn/demo với khách trên Opportunity sẽ tạo <code>calendar.event</code> liên kết ngược qua <code>opportunity_id</code>.</p>" }
       ],
-      notes: "",
-      cases: []
+      notes: "Cân nhắc thêm rule tự động 'nhắc gọi lại' nếu Opportunity nằm yên 1 chỗ quá 10 ngày không đổi stage.",
+      cases: [
+        {
+          id: "cs_c2",
+          title: "Kéo thẻ qua Won nhưng probability không tự về 100%",
+          status: "resolved",
+          chatLink: "",
+          description: "Sales kéo Opportunity vào cột 'Won' nhưng % xác suất vẫn giữ nguyên giá trị cũ (vd 70%) thay vì tự nhảy lên 100%, gây sai lệch báo cáo forecast.",
+          images: [],
+          cause: "Cột Won được tạo thủ công nhưng quên tick is_won = true trên crm.stage, nên hệ thống không nhận diện đây là giai đoạn thắng.",
+          resolution: "Vào Settings ▸ Sales ▸ CRM ▸ Stages, mở stage 'Won', tick 'Is Won Stage'. Chạy lại action 'Recompute probability' cho các opportunity cũ nếu cần."
+        }
+      ]
     },
     {
       id: "f_crm_3",
@@ -385,23 +417,157 @@ export const CRM = {
           }
         ]
       },
-      flows: [],
+      flows: [
+        {
+          id: "fl_crm_3",
+          name: "Vòng đời một hoạt động (Activity)",
+          nodes: [
+            { id: "an1", type: "start",   label: "Sales lên lịch hoạt động",                x: 40,  y: 140 },
+            { id: "an2", type: "task",    label: "Tạo mail.activity (gọi/họp/email)",       x: 280, y: 140 },
+            { id: "an3", type: "gateway", label: "Tới hạn mà chưa xong?",                   x: 520, y: 140 },
+            { id: "an4", type: "task",    label: "Đánh dấu quá hạn — chấm đỏ Kanban",       x: 760, y: 40  },
+            { id: "an5", type: "task",    label: "Đánh dấu hoàn thành",                     x: 760, y: 240 },
+            { id: "an6", type: "end",     label: "Kết thúc hoạt động",                      x: 1000,y: 140 }
+          ],
+          edges: [
+            { id: "ae1", from: "an1", to: "an2", label: "" },
+            { id: "ae2", from: "an2", to: "an3", label: "" },
+            { id: "ae3", from: "an3", to: "an4", label: "Quá hạn" },
+            { id: "ae4", from: "an3", to: "an5", label: "Xong đúng hạn" },
+            { id: "ae5", from: "an4", to: "an6", label: "" },
+            { id: "ae6", from: "an5", to: "an6", label: "" }
+          ]
+        }
+      ],
       detailBlocks: [
         {
           id: "db_c6", icon: "ti-bell", title: "Nhắc nhở & cảnh báo trễ hạn",
           content: "<p>Lead/Opportunity quá hạn hoạt động (activity <code>date_deadline</code> < hôm nay) sẽ hiện chấm đỏ trên thẻ Kanban và trong mục <b>Hoạt động của tôi</b>.</p>"
+        },
+        {
+          id: "db_c7", icon: "ti-list-numbers", title: "Loại hoạt động thường dùng",
+          content: "<ul><li><b>Gọi điện</b> — mặc định hẹn lại trong ngày</li><li><b>Email</b> — auto tạo khi gửi báo giá</li><li><b>Họp / Demo</b> — đồng bộ 2 chiều với Calendar</li><li><b>Việc cần làm</b> — nhắc việc nội bộ, không gắn khách hàng</li></ul>"
         }
       ],
-      integrations: [],
+      integrations: [
+        { id: "int_c6", module: "calendar", icon: "ti-calendar", color: "#EC4899", direction: "out",
+          content: "<p>Hoạt động loại 'Họp' đồng bộ 2 chiều với <code>calendar.event</code> — đổi giờ trên Calendar sẽ cập nhật ngược lại <code>date_deadline</code> của activity.</p>" }
+      ],
       notes: "Cân nhắc bật email nhắc nhở hằng ngày (digest) cho Sales Person có activity quá hạn — hiện chỉ hiện trên UI, chưa có email tự động.",
-      cases: []
+      cases: [
+        {
+          id: "cs_c3",
+          title: "Không nhận được nhắc nhở khi hoạt động quá hạn",
+          status: "investigating",
+          chatLink: "",
+          description: "Sales Person phản ánh không thấy nhắc nhở nào (email/thông báo) khi activity quá hạn, chỉ tình cờ thấy chấm đỏ trên Kanban khi mở app lên.",
+          images: [],
+          cause: "Hệ thống hiện chỉ hiển thị cảnh báo trên UI (badge đỏ), chưa bật digest email nhắc việc quá hạn hằng ngày.",
+          resolution: "Đang đề xuất bật Scheduled Action 'Mail Activity: Reminder' + cấu hình mail template nhắc việc quá hạn (xem thêm phần Ghi chú)."
+        }
+      ]
     },
-    { id: "f_crm_4", name: "Chốt deal & Chuyển thành đơn hàng", desc: "Won → tạo báo giá bên Sales, đóng Opportunity", models: { cards: [] }, flows: [], detailBlocks: [], integrations: [], notes: "" }
+    {
+      id: "f_crm_4",
+      name: "Chốt deal & Chuyển thành đơn hàng",
+      desc: "Won → tạo báo giá bên Sales, đóng Opportunity",
+      models: {
+        cards: [
+          {
+            id: "mc_wonlead", name: "crm.lead", color: "#D4537E", x: 40, y: 40, width: 300,
+            fields: [
+              { name: "name",             type: "Char",     desc: "Tên cơ hội",             req: true },
+              { name: "partner_id",       type: "Many2one", desc: "Khách hàng",              req: true, relTo: "mc_partner3" },
+              { name: "expected_revenue", type: "Monetary", desc: "Giá trị dự kiến" },
+              { name: "date_closed",      type: "Datetime", desc: "Ngày chốt thực tế" },
+              { name: "stage_id",         type: "Many2one", desc: "Giai đoạn (đã đạt Won)" },
+              { name: "team_id",          type: "Many2one", desc: "Sales Team" }
+            ]
+          },
+          {
+            id: "mc_so2", name: "sale.order", color: "#5BAA50", x: 400, y: 40, width: 300,
+            fields: [
+              { name: "name",           type: "Char",     desc: "Mã báo giá (SO)",  req: true },
+              { name: "partner_id",     type: "Many2one", desc: "Khách hàng",       req: true, relTo: "mc_partner3" },
+              { name: "opportunity_id", type: "Many2one", desc: "Cơ hội gốc",       relTo: "mc_wonlead" },
+              { name: "amount_total",   type: "Monetary", desc: "Tổng tiền" },
+              { name: "state",          type: "Selection",desc: "draft / sent / sale" }
+            ]
+          },
+          {
+            id: "mc_partner3", name: "res.partner", color: "#7C3AED", x: 40, y: 300, width: 300,
+            fields: [
+              { name: "name",  type: "Char", desc: "Tên khách hàng", req: true },
+              { name: "email", type: "Char", desc: "Email" },
+              { name: "phone", type: "Char", desc: "SĐT" }
+            ]
+          }
+        ]
+      },
+      flows: [
+        {
+          id: "fl_crm_4",
+          name: "Won → Tạo báo giá bên Sales",
+          nodes: [
+            { id: "wn1", type: "start",   label: "Opportunity vào stage Won",                 x: 40,  y: 140 },
+            { id: "wn2", type: "task",    label: "Set probability=100%, date_closed=hôm nay", x: 280, y: 140 },
+            { id: "wn3", type: "gateway", label: "Đã có Quotation chưa?",                     x: 520, y: 140 },
+            { id: "wn4", type: "task",    label: "Bấm 'New Quotation' → tạo sale.order",      x: 760, y: 40  },
+            { id: "wn5", type: "task",    label: "Mở Quotation có sẵn",                       x: 760, y: 240 },
+            { id: "wn6", type: "end",     label: "Chuyển sang quy trình Sales",                x: 1000,y: 140 }
+          ],
+          edges: [
+            { id: "we1", from: "wn1", to: "wn2", label: "" },
+            { id: "we2", from: "wn2", to: "wn3", label: "" },
+            { id: "we3", from: "wn3", to: "wn4", label: "Chưa" },
+            { id: "we4", from: "wn3", to: "wn5", label: "Rồi" },
+            { id: "we5", from: "wn4", to: "wn6", label: "" },
+            { id: "we6", from: "wn5", to: "wn6", label: "" }
+          ]
+        }
+      ],
+      detailBlocks: [
+        {
+          id: "db_c8", icon: "ti-target", title: "Mục đích & Phạm vi",
+          content: "<p>Đây là điểm bàn giao giữa <b>CRM</b> và <b>Sales</b>: khi Opportunity được xác nhận Thắng, Sales Person cần một thao tác duy nhất để chuyển nhu cầu khách hàng thành báo giá chính thức, không phải nhập lại thông tin từ đầu.</p>"
+        },
+        {
+          id: "db_c9", icon: "ti-list-numbers", title: "Thao tác chính",
+          content: "<ol><li>Kéo/chuyển Opportunity vào stage có <code>is_won = true</code></li><li>Hệ thống tự set <code>probability = 100</code> và <code>date_closed</code> = thời điểm hiện tại</li><li>Trên form Opportunity, bấm nút <b>New Quotation</b></li><li>Odoo tạo <code>sale.order</code> mới, kế thừa <code>partner_id</code> và ghi <code>opportunity_id</code> để truy vết ngược</li><li>Sales Person điền sản phẩm/số lượng rồi tiếp tục quy trình báo giá như bình thường bên module <b>Sales</b></li></ol>"
+        },
+        {
+          id: "db_c10", icon: "ti-gavel", title: "Quy tắc nghiệp vụ",
+          content: "<ul><li>Không cho set stage Won nếu <code>expected_revenue = 0</code> — bắt buộc nhập giá trị deal trước khi chốt</li><li>Một Opportunity chỉ nên có <mark style='background:#FEF08A'>1 Quotation gốc</mark> liên kết qua <code>opportunity_id</code> để báo cáo doanh thu không bị đếm trùng</li><li>Opportunity Won vẫn giữ nguyên trong Pipeline (không xoá) để phục vụ báo cáo lịch sử chuyển đổi (conversion rate)</li></ul>"
+        }
+      ],
+      integrations: [
+        { id: "int_c7", module: "sale", icon: "ti-shopping-cart", color: "#5BAA50", direction: "out",
+          content: "<p>Tạo <code>sale.order</code> mới với <code>partner_id</code> kế thừa từ Opportunity, <code>order_line</code> để trống chờ Sales Person điền sản phẩm.</p><p><code>opportunity_id</code> được lưu lại trên đơn hàng để truy vết Opportunity gốc.</p>" },
+        { id: "int_c8", module: "mail", icon: "ti-mail", color: "#2563EB", direction: "out",
+          content: "<p>Khi Opportunity chuyển Won, hệ thống tự log message trên chatter + thông báo cho Sales Manager của Team theo dõi.</p>" }
+      ],
+      notes: "Khi khách hàng có nhiều Opportunity song song (upsell/cross-sell), cân nhắc tạo Quotation riêng cho từng Opportunity thay vì gộp chung 1 đơn.",
+      cases: [
+        {
+          id: "cs_c4",
+          title: "Tạo trùng nhiều báo giá cho 1 Opportunity",
+          status: "open",
+          chatLink: "",
+          description: "Sales bấm nhầm nút 'New Quotation' 2 lần trên cùng 1 Opportunity đã Won, hệ thống tạo ra 2 sale.order riêng biệt cùng trỏ về 1 opportunity_id, gây khó theo dõi báo cáo doanh thu.",
+          images: [],
+          cause: "Nút 'New Quotation' hiện không kiểm tra đã tồn tại quotation liên kết hay chưa trước khi tạo mới.",
+          resolution: "Đang đề xuất thêm gateway kiểm tra (xem Luồng xử lý) — nếu opportunity_id đã có sale.order thì đổi nút thành 'View Quotation' thay vì tạo mới."
+        }
+      ]
+    }
   ],
   changelog: [
-    { id: "cl_crm1", date: "2026-05-20", version: "0.3", type: "feature",     status: "approved", author: "Lan Anh", featureId: "f_crm_1", title: "Thêm luồng phân loại & gán Sales Team tự động", desc: "Bổ sung gateway kiểm tra điều kiện đủ tiêu chuẩn trước khi convert Lead → Opportunity, kèm sơ đồ hợp nhất lead từ nhiều nguồn." },
-    { id: "cl_crm2", date: "2026-05-14", version: "0.2", type: "improvement",status: "approved", author: "Lan Anh", featureId: "f_crm_2", title: "Chuẩn hoá field lost_reason_id",                     desc: "Bắt buộc chọn lý do khi đánh dấu Lost để phục vụ báo cáo lý do mất khách." },
-    { id: "cl_crm3", date: "2026-05-08", version: "0.1", type: "feature",     status: "approved", author: "Lan Anh", featureId: "",         title: "Khởi tạo module CRM",                              desc: "Research sơ bộ menu, model chính (crm.lead, crm.stage, crm.team) và vẽ luồng chính Lead → Won." }
+    { id: "cl_crm6", date: "2026-05-25", version: "0.6", type: "feature",     status: "approved", author: "Lan Anh", featureId: "f_crm_4", title: "Vẽ luồng Won → Tạo báo giá & case trùng quotation",      desc: "Bổ sung đầy đủ model (crm.lead/sale.order), luồng xử lý và case khách hàng cho bước chuyển giao từ CRM sang Sales khi chốt deal." },
+    { id: "cl_crm5", date: "2026-05-23", version: "0.5", type: "feature",     status: "approved", author: "Lan Anh", featureId: "f_crm_3", title: "Thêm luồng vòng đời hoạt động (Activity)",                 desc: "Vẽ sơ đồ tạo → theo dõi → quá hạn/hoàn thành cho mail.activity, bổ sung case về digest email nhắc việc." },
+    { id: "cl_crm4", date: "2026-05-22", version: "0.4", type: "improvement", status: "approved", author: "Lan Anh", featureId: "f_crm_2", title: "Tự động hoá cập nhật probability theo stage",              desc: "Thêm sơ đồ luồng đổi giai đoạn Kanban + case xử lý lỗi probability không tự về 100% khi Won." },
+    { id: "cl_crm1", date: "2026-05-20", version: "0.3", type: "feature",     status: "approved", author: "Lan Anh", featureId: "f_crm_1", title: "Thêm luồng phân loại & gán Sales Team tự động",            desc: "Bổ sung gateway kiểm tra điều kiện đủ tiêu chuẩn trước khi convert Lead → Opportunity, kèm sơ đồ hợp nhất lead từ nhiều nguồn." },
+    { id: "cl_crm2", date: "2026-05-14", version: "0.2", type: "improvement",status: "approved", author: "Lan Anh", featureId: "f_crm_2", title: "Chuẩn hoá field lost_reason_id",                            desc: "Bắt buộc chọn lý do khi đánh dấu Lost để phục vụ báo cáo lý do mất khách." },
+    { id: "cl_crm3", date: "2026-05-08", version: "0.1", type: "feature",     status: "approved", author: "Lan Anh", featureId: "",         title: "Khởi tạo module CRM",                                    desc: "Research sơ bộ menu, model chính (crm.lead, crm.stage, crm.team) và vẽ luồng chính Lead → Won." }
   ]
 };
 
