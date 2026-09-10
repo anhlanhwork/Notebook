@@ -329,28 +329,30 @@ function IntCard({ item, onUpdate, onDelete, onMoveUp, onMoveDown, index, total,
         <CInput className="intc-module-input"
                value={item.module || ""}
                onChange={e => onUpdate({ module: e.target.value })}
-               placeholder="module.name"/>
+               placeholder="module.name"
+               title={item.module || ""}/>
 
-        {/* Direction segmented selector */}
-        <div className="intc-dir-group">
-          {DIRECTIONS.map(d => (
-            <button key={d.v}
-                    className={"intc-dir" + (item.direction === d.v ? " active" : "")}
-                    style={item.direction === d.v ? { background: d.bg, color: d.color, borderColor: d.color } : {}}
-                    onClick={() => onUpdate({ direction: d.v })}>
-              <i className={"ti " + d.icon}/> {d.l}
+        {/* Direction + actions — wrap together as one unit on narrow cards */}
+        <div className="intc-controls">
+          <div className="intc-dir-group">
+            {DIRECTIONS.map(d => (
+              <button key={d.v}
+                      className={"intc-dir" + (item.direction === d.v ? " active" : "")}
+                      style={item.direction === d.v ? { background: d.bg, color: d.color, borderColor: d.color } : {}}
+                      onClick={() => onUpdate({ direction: d.v })}>
+                <i className={"ti " + d.icon}/> {d.l}
+              </button>
+            ))}
+          </div>
+
+          <div className="intc-actions">
+            <button onClick={onMoveUp}   disabled={index === 0}         title="Lên"><i className="ti ti-arrow-up"/></button>
+            <button onClick={onMoveDown} disabled={index === total - 1} title="Xuống"><i className="ti ti-arrow-down"/></button>
+            <button onClick={onDelete} className="intc-del-btn" title="Xóa"><i className="ti ti-trash"/></button>
+            <button onClick={onToggleCollapse} className="dblk-collapse-btn" title={collapsed ? "Mở rộng" : "Thu gọn"}>
+              <i className={"ti " + (collapsed ? "ti-chevron-down" : "ti-chevron-up")}/>
             </button>
-          ))}
-        </div>
-
-        {/* Actions */}
-        <div className="intc-actions">
-          <button onClick={onMoveUp}   disabled={index === 0}         title="Lên"><i className="ti ti-arrow-up"/></button>
-          <button onClick={onMoveDown} disabled={index === total - 1} title="Xuống"><i className="ti ti-arrow-down"/></button>
-          <button onClick={onDelete} className="intc-del-btn" title="Xóa"><i className="ti ti-trash"/></button>
-          <button onClick={onToggleCollapse} className="dblk-collapse-btn" title={collapsed ? "Mở rộng" : "Thu gọn"}>
-            <i className={"ti " + (collapsed ? "ti-chevron-down" : "ti-chevron-up")}/>
-          </button>
+          </div>
         </div>
       </div>
 
@@ -400,27 +402,21 @@ function IntegrationsPane({ integrations = [], onChange }) {
 
   return (
     <div className="ints-pane">
-      {/* Summary + filter bar */}
+      {/* Filter bar (doubles as the count summary — no more duplicate badges) */}
       <div className="ints-topbar">
-        <div className="ints-counts">
-          {DIRECTIONS.map(d => (
-            <div key={d.v} className="ints-count-chip" style={{ background: d.bg, color: d.color }}>
-              <i className={"ti " + d.icon}/> <strong>{counts[d.v]}</strong> {d.l}
-            </div>
-          ))}
-        </div>
         <div className="ints-filter-group">
           {DIRECTIONS.map(d => (
             <button key={d.v}
                     className={"ints-filter-btn" + (filter === d.v ? " active" : "")}
                     style={filter === d.v ? { background: d.bg, color: d.color, borderColor: d.color } : {}}
-                    onClick={() => setFilter(filter === d.v ? null : d.v)}>
-              <i className={"ti " + d.icon}/> {d.l}
+                    onClick={() => setFilter(filter === d.v ? null : d.v)}
+                    title={`Lọc theo ${d.l.toLowerCase()}`}>
+              <i className={"ti " + d.icon}/> <strong>{counts[d.v]}</strong> {d.l}
             </button>
           ))}
         </div>
         {integrations.length > 1 && (
-          <div className="dblocks-ctrl-bar">
+          <div className="ints-ctrl-bar dblocks-ctrl-bar">
             <button className="dblocks-ctrl-btn" onClick={expandAll}><i className="ti ti-chevrons-down"/> Mở tất cả</button>
             <button className="dblocks-ctrl-btn" onClick={collapseAll}><i className="ti ti-chevrons-up"/> Đóng tất cả</button>
           </div>
@@ -875,7 +871,7 @@ const STATUS_META = {
 
 const MODULE_ICONS = {
   sale: "ti-shopping-cart", purchase: "ti-shopping-bag", stock: "ti-package",
-  account: "ti-calculator", crm: "ti-users", hr: "ti-id-badge", default: "ti-cube",
+  account: "ti-calculator", crm: "ti-users", hr: "ti-id-badge", affiliate: "ti-affiliate", default: "ti-cube",
 };
 
 function OverviewPane({ mod, setMod }) {
@@ -1142,25 +1138,19 @@ function ChangelogRow({ entry, idx, features, onUpdate, onRemove }) {
    FEATURE LIST PANE — table of all features + inline detail
    ══════════════════════════════════════════════════════════════ */
 const FL_CHIPS = [
-  { key: 'models',       icon: 'ti-table',         get: f => f.models?.cards?.length || 0 },
-  { key: 'flows',        icon: 'ti-git-branch',     get: f => f.flows?.length || 0 },
-  { key: 'detailBlocks', icon: 'ti-list-details',   get: f => f.detailBlocks?.length || 0 },
-  { key: 'integrations', icon: 'ti-plug-connected', get: f => f.integrations?.length || 0 },
-  { key: 'cases',        icon: 'ti-bug',            get: f => f.cases?.length || 0 },
+  { key: 'models',       icon: 'ti-table',         label: 'Models',    get: f => f.models?.cards?.length || 0 },
+  { key: 'flows',        icon: 'ti-git-branch',     label: 'Luồng',     get: f => f.flows?.length || 0 },
+  { key: 'detailBlocks', icon: 'ti-list-details',   label: 'Chi tiết',  get: f => f.detailBlocks?.length || 0 },
+  { key: 'integrations', icon: 'ti-plug-connected', label: 'Tích hợp',  get: f => f.integrations?.length || 0 },
+  { key: 'cases',        icon: 'ti-bug',            label: 'Case',      get: f => f.cases?.length || 0 },
 ];
 
-function FeatureListPane({ mod, setMod, accent }) {
-  const [selId,     setSelId]     = useState(null);
+function FeatureListPane({ mod, setMod, onSelect }) {
   const [collapsed, setCollapsed] = useState(new Set());
 
-  const selFeat    = selId ? mod.features.find(f => f.id === selId) : null;
   const rootFeats  = mod.features.filter(f => !f.parentId);
   const childrenOf = (pid) => mod.features.filter(f => f.parentId === pid);
   const totalKids  = mod.features.length - rootFeats.length;
-
-  function updateFeat(id, updated) {
-    setMod({ ...mod, features: mod.features.map(x => x.id === id ? updated : x) });
-  }
 
   function toggleCollapse(id, e) {
     e.stopPropagation();
@@ -1172,7 +1162,7 @@ function FeatureListPane({ mod, setMod, accent }) {
     if (!name) return;
     const id = 'f_' + Math.random().toString(36).slice(2, 6);
     setMod({ ...mod, features: [...mod.features, { id, name, parentId: null, desc: '', models: { cards: [] }, flows: [], detailBlocks: [], integrations: [], notes: '' }] });
-    setSelId(id);
+    onSelect({ type: "feature", featId: id });
   }
 
   async function addChildFeat(parentId, e) {
@@ -1190,8 +1180,8 @@ function FeatureListPane({ mod, setMod, accent }) {
     }
     feats.splice(ins + 1, 0, nf);
     setMod({ ...mod, features: feats });
-    setSelId(id);
     setCollapsed(prev => { const n = new Set(prev); n.delete(parentId); return n; });
+    onSelect({ type: "feature", featId: id });
   }
 
   async function renameFeat(id, e) {
@@ -1209,7 +1199,6 @@ function FeatureListPane({ mod, setMod, accent }) {
     if (!await showConfirm(msg)) return;
     const gone = new Set([id, ...kids.map(k => k.id)]);
     setMod({ ...mod, features: mod.features.filter(x => !gone.has(x.id)) });
-    if (gone.has(selId)) setSelId(null);
   }
 
   function moveUp(id, e) {
@@ -1260,7 +1249,7 @@ function FeatureListPane({ mod, setMod, accent }) {
   }
 
   return (
-    <div className={'fl-pane' + (selFeat ? ' fl-has-detail' : '')}>
+    <div className="fl-pane">
 
       {/* ── Table section ── */}
       <div className="fl-table-section">
@@ -1297,8 +1286,8 @@ function FeatureListPane({ mod, setMod, accent }) {
           ) : rows.map(({ feat: f, isChild, num, kidCount, isColl }) => (
             <div
               key={f.id}
-              className={['fl-row', isChild ? 'fl-row-child' : 'fl-row-parent', selId === f.id ? 'fl-row-sel' : ''].join(' ').trim()}
-              onClick={() => setSelId(prev => prev === f.id ? null : f.id)}
+              className={['fl-row', isChild ? 'fl-row-child' : 'fl-row-parent'].join(' ').trim()}
+              onClick={() => onSelect({ type: "feature", featId: f.id })}
             >
               {/* # */}
               <div className="fl-tc fl-tc-num fl-row-num">{num}</div>
@@ -1315,7 +1304,7 @@ function FeatureListPane({ mod, setMod, accent }) {
                     </button>
                     <span className="fl-dot fl-dot-filled"/>
                     <span className="fl-name-text">{f.name}</span>
-                    <span className={'fl-con-chip' + (kidCount === 0 ? ' fl-con-zero' : '')}>{kidCount}con</span>
+                    {kidCount > 0 && <span className="fl-con-chip">{kidCount} con</span>}
                   </>
                 ) : (
                   <>
@@ -1335,7 +1324,7 @@ function FeatureListPane({ mod, setMod, accent }) {
               {/* Nội dung chips */}
               <div className="fl-tc fl-tc-nd fl-row-nd">
                 {FL_CHIPS.map(c => (
-                  <span key={c.key} className="fl-nd-chip">
+                  <span key={c.key} className="fl-nd-chip" title={c.label}>
                     <i className={`ti ${c.icon}`}/>{c.get(f)}
                   </span>
                 ))}
@@ -1357,37 +1346,6 @@ function FeatureListPane({ mod, setMod, accent }) {
           ))}
         </div>
       </div>
-
-      {/* ── Detail panel ── */}
-      {selFeat && (
-        <div className="fl-detail">
-          <div className="fl-detail-hd">
-            <div className="fl-detail-hd-left">
-              <div className="fl-detail-eyebrow">
-                {selFeat.parentId
-                  ? `CON CỦA: ${mod.features.find(x => x.id === selFeat.parentId)?.name || ''}`
-                  : 'CHI TIẾT TÍNH NĂNG ĐÃ CHỌN'}
-              </div>
-              <h3 className="fl-detail-title">{selFeat.name}</h3>
-              {selFeat.desc && <p className="fl-detail-subdesc">{selFeat.desc}</p>}
-            </div>
-            <div className="fl-detail-btns">
-              <button className="btn-ghost btn-sm" onClick={e => renameFeat(selFeat.id, e)}>
-                <i className="ti ti-edit"/> Đổi tên
-              </button>
-              {!selFeat.parentId && (
-                <button className="btn-ghost btn-sm" onClick={e => addChildFeat(selFeat.id, e)}>
-                  <i className="ti ti-plus"/> Thêm con
-                </button>
-              )}
-              <button className="btn-ghost btn-sm" onClick={() => setSelId(null)} title="Đóng">
-                <i className="ti ti-x"/>
-              </button>
-            </div>
-          </div>
-          <FeaturePane feature={selFeat} setFeature={nv => updateFeat(selFeat.id, nv)} accent={accent} />
-        </div>
-      )}
     </div>
   );
 }
@@ -1441,7 +1399,7 @@ function ChangelogPane({ mod, setMod }) {
 /* ════════════════════════════════════════════════════════════
    MAIN EDITOR
    ════════════════════════════════════════════════════════════ */
-export function Editor({ mod, setMod, selection, accent, onSave, saveState, onBackToModules, notebook, onBackToHome, returnContext }) {
+export function Editor({ mod, setMod, selection, accent, onSave, saveState, onBackToModules, notebook, onBackToHome, returnContext, onSelect }) {
   const f = selection.type === "feature" ? mod.features.find(x => x.id === selection.featId) : null;
 
   const headerTitle = (() => {
@@ -1495,7 +1453,7 @@ export function Editor({ mod, setMod, selection, accent, onSave, saveState, onBa
           />
         )}
         {selection.type === "featurelist" && (
-          <FeatureListPane mod={mod} setMod={setMod} accent={accent} />
+          <FeatureListPane mod={mod} setMod={setMod} onSelect={onSelect} />
         )}
         {selection.type === "changelog" && (
           <ChangelogPane mod={mod} setMod={setMod} />

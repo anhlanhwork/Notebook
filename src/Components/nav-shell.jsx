@@ -132,7 +132,7 @@ export function NavShell({ navSection, setNavSection, children }) {
 
         {/* Bottom: settings + avatar */}
         <div className="nav-sidebar-bot">
-          <button className="nav-item" title="Cài đặt">
+          <button className="nav-item" title="Cài đặt (sắp ra mắt)" disabled>
             <i className="ti ti-settings"/>
             {expanded && <span className="nav-item-label">Cài đặt</span>}
           </button>
@@ -175,7 +175,7 @@ export function NavShell({ navSection, setNavSection, children }) {
       {/* ── Main area ── */}
       <div className="nav-main" data-section={navSection}>
         <header className="nav-header">
-          <div className="nav-header-section">{active?.label?.toUpperCase()}</div>
+          <div className="nav-header-section" onClick={() => setNavSection(navSection)} title={`Về ${active?.label}`}>{active?.label?.toUpperCase()}</div>
 
           <div className="nav-header-search">
             <i className="ti ti-search"/>

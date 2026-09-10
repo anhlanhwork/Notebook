@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { showConfirm } from './dialog.jsx';
 import { CInput, CTextarea } from './ui/CInput.jsx';
 import { Breadcrumb } from './breadcrumb.jsx';
+import { SEED_EXPERIENCE } from '../Scripts/data.js';
 
 const STORAGE_KEY = 'exp_v2';
 
@@ -17,6 +18,12 @@ const EXP_CATS = {
   tip:          { label: 'Mẹo',           icon: 'ti-wand',            color: '#8B5CF6', bg: 'rgba(139,92,246,0.12)'  },
   bestpractice: { label: 'Best practice',  icon: 'ti-star',            color: '#5BAA50', bg: 'rgba(91,170,80,0.12)'   },
   pitfall:      { label: 'Tránh mắc phải', icon: 'ti-alert-triangle',  color: '#EF4444', bg: 'rgba(239,68,68,0.12)'   },
+};
+
+const EXP_IMPACT = {
+  high:   { label: 'Cao',        color: '#DC2626', bg: 'rgba(220,38,38,0.10)',  border: 'rgba(220,38,38,0.35)'  },
+  medium: { label: 'Trung bình', color: '#D97706', bg: 'rgba(217,119,6,0.10)',  border: 'rgba(217,119,6,0.35)'  },
+  low:    { label: 'Thấp',       color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.3)' },
 };
 
 const AV_COLORS = ['#5BAA50','#378ADD','#E11D48','#7C3AED','#F59E0B','#0D9488','#EC4899','#F97316'];
@@ -41,20 +48,53 @@ function makeExp() {
     title: '', category: 'lesson', status: 'draft',
     description: '', content: '', tags: [],
     author: '', projectRef: '', slug: '',
-    views: 0, likes: 0, comments: 0,
+    views: 0, likes: 0, comments: 0, saves: 0,
+    impact: 'medium', reusable: false, channels: [],
     scheduledAt: null, publishedAt: null,
     createdAt: today(), updatedAt: today(),
   };
 }
 
+/* Estimate reading time from plain text length (~200 words/min) */
+function estimateReadMins(html) {
+  const text = (html || '').replace(/<[^>]+>/g, ' ').trim();
+  if (!text) return 1;
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+}
+
+/* Split rich-text content into numbered sections at each <h2>/<h3>.
+   Returns null when the content has no headings (rendered as one plain block instead). */
+function splitSections(html) {
+  if (!html) return null;
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const nodes = Array.from(doc.body.childNodes);
+  const headingIdx = nodes
+    .map((n, i) => (n.nodeType === 1 && /^H[23]$/.test(n.tagName)) ? i : -1)
+    .filter(i => i >= 0);
+  if (headingIdx.length === 0) return null;
+
+  return headingIdx.map((idx, k) => {
+    const end = headingIdx[k + 1] ?? nodes.length;
+    const wrap = doc.createElement('div');
+    nodes.slice(idx + 1, end).forEach(n => wrap.appendChild(n.cloneNode(true)));
+    return { title: nodes[idx].textContent, html: wrap.innerHTML };
+  });
+}
+
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw === null) return SEED_EXPERIENCE;
+    return JSON.parse(raw) || [];
+  } catch { return SEED_EXPERIENCE; }
 }
 
 /* ── Main screen ── */
 export function ExperienceScreen() {
   const [items, setItems]               = useState(load);
   const [editId, setEditId]             = useState(null);
+  const [viewId, setViewId]             = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [catFilter, setCatFilter]       = useState('all');
   const [query, setQuery]               = useState('');
@@ -70,6 +110,12 @@ export function ExperienceScreen() {
   }
   function publish(id) {
     save(items.map(i => i.id === id ? { ...i, status: 'published', publishedAt: today(), updatedAt: today() } : i));
+  }
+  function unpublish(id) {
+    save(items.map(i => i.id === id ? { ...i, status: 'draft', publishedAt: null, updatedAt: today() } : i));
+  }
+  function touchUpdated(id) {
+    save(items.map(i => i.id === id ? { ...i, updatedAt: today() } : i));
   }
 
   const published  = items.filter(i => i.status === 'published').length;
@@ -99,6 +145,9 @@ export function ExperienceScreen() {
     if (!item) { setEditId(null); return null; }
     return <ExperienceEditor item={item} onUpdate={upsert} onBack={() => setEditId(null)} onDelete={() => del(editId).then(() => setEditId(null))}/>;
   }
+
+  const viewItem = viewId ? items.find(i => i.id === viewId) : null;
+  const authorCount = a => items.filter(i => i.author && i.author === a).length;
 
   return (
     <div className="exp-screen">
@@ -182,7 +231,7 @@ export function ExperienceScreen() {
           <div className="exp-grid">
             {filtered.map(item => (
               <ExperienceCard key={item.id} item={item}
-                onOpen={() => setEditId(item.id)}
+                onOpen={() => setViewId(item.id)}
                 onPublish={e => { e.stopPropagation(); publish(item.id); }}
                 onDelete={e => { e.stopPropagation(); del(item.id); }}/>
             ))}
@@ -191,13 +240,25 @@ export function ExperienceScreen() {
           <div className="exp-list2">
             {filtered.map(item => (
               <ExperienceListRow key={item.id} item={item}
-                onOpen={() => setEditId(item.id)}
+                onOpen={() => setViewId(item.id)}
                 onPublish={e => { e.stopPropagation(); publish(item.id); }}
                 onDelete={e => { e.stopPropagation(); del(item.id); }}/>
             ))}
           </div>
         )}
       </div>
+
+      {viewItem && (
+        <ExperienceDetailModal
+          item={viewItem}
+          authorPostCount={authorCount(viewItem.author)}
+          onClose={() => setViewId(null)}
+          onEdit={() => { setViewId(null); setEditId(viewItem.id); }}
+          onPublish={() => publish(viewItem.id)}
+          onUnpublish={() => unpublish(viewItem.id)}
+          onUpdatePublish={() => touchUpdated(viewItem.id)}
+        />
+      )}
     </div>
   );
 }
@@ -308,6 +369,215 @@ function ExperienceListRow({ item, onOpen, onPublish, onDelete }) {
           <button className="exp-lrow-pub-btn" onClick={onPublish}>Publish</button>
         )}
         <button className="exp-lrow-del" onClick={onDelete}><i className="ti ti-trash"/></button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Detail / read modal ── */
+function ExperienceDetailModal({ item, authorPostCount, onClose, onEdit, onPublish, onUnpublish, onUpdatePublish }) {
+  const [copied, setCopied]   = useState(null); // 'link' | 'internal' | null
+  const [justSaved, setJustSaved] = useState(false);
+
+  const cat      = EXP_CATS[item.category] || EXP_CATS.lesson;
+  const st       = EXP_STATUS[item.status] || EXP_STATUS.draft;
+  const impact   = EXP_IMPACT[item.impact] || EXP_IMPACT.medium;
+  const readMins = estimateReadMins(item.content);
+  const sections = splitSections(item.content);
+  const publicUrl = `knowledge.notebook.vn/${item.slug || item.id}`;
+
+  function copy(text, which) {
+    navigator.clipboard?.writeText(text).catch(() => {});
+    setCopied(which);
+    setTimeout(() => setCopied(null), 1600);
+  }
+  function doUpdatePublish() {
+    onUpdatePublish();
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 1600);
+  }
+
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div className="expd-modal" onClick={e => e.stopPropagation()}>
+
+        {/* Topbar */}
+        <div className="expd-topbar">
+          <div className="expd-topbar-left">
+            <span className="expd-crumb">KINH NGHIỆM · {cat.label.toUpperCase()}</span>
+            {item.reusable && <span className="expd-reuse-badge"><i className="ti ti-recycle"/> Tái sử dụng được</span>}
+          </div>
+          <div className="expd-topbar-right">
+            <span className="exp-card-st-badge" style={{ color: st.color, background: st.bg, borderColor: st.border }}>
+              <i className={'ti ' + st.icon}/> {st.label}
+            </span>
+            <button className="expd-close" onClick={onClose} title="Đóng"><i className="ti ti-x"/></button>
+          </div>
+        </div>
+
+        <div className="expd-scroll">
+
+          {/* Hero */}
+          <div className="expd-hero">
+            <div className="expd-hero-eyebrow" style={{ color: cat.color }}>
+              <i className={'ti ' + cat.icon}/> {cat.label.toUpperCase()}
+            </div>
+            <h1 className="expd-hero-title">{item.title || 'Chưa có tiêu đề'}</h1>
+            {item.description && <p className="expd-hero-sub">{item.description}</p>}
+          </div>
+
+          {/* Author row + impact */}
+          <div className="expd-meta-row">
+            <div className="expd-author">
+              <span className="exp-card-av" style={{ background: avatarColor(item.author || '?') }}>
+                {initials(item.author)}
+              </span>
+              <div className="expd-author-info">
+                <div className="expd-author-name">{item.author || 'Chưa gán tác giả'}</div>
+                <div className="expd-author-sub">
+                  {item.publishedAt || item.updatedAt} · {readMins} phút đọc
+                  {item.projectRef && <> · <i className="ti ti-folder"/> {item.projectRef}</>}
+                </div>
+              </div>
+            </div>
+            <span className="expd-impact-badge" style={{ color: impact.color, background: impact.bg, borderColor: impact.border }}>
+              <i className="ti ti-flame"/> TÁC ĐỘNG <b>{impact.label}</b>
+            </span>
+          </div>
+
+          <div className="expd-body">
+            {/* Main column */}
+            <div className="expd-main">
+              {item.description && (
+                <blockquote className="expd-tldr">
+                  <span className="expd-tldr-lbl"><i className="ti ti-quote"/> TL;DR</span>
+                  <p>{item.description}</p>
+                </blockquote>
+              )}
+
+              {sections ? (
+                <div className="expd-sections">
+                  {sections.map((s, i) => (
+                    <div className="expd-section" key={i} id={`expd-sec-${i}`}>
+                      <div className="expd-section-head">
+                        <span className="expd-section-num">{String(i + 1).padStart(2, '0')}</span>
+                        <h2>{s.title}</h2>
+                      </div>
+                      <div className="expd-prose" dangerouslySetInnerHTML={{ __html: s.html }}/>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="expd-prose expd-prose--plain" dangerouslySetInnerHTML={{ __html: item.content || '<p><i>Chưa có nội dung.</i></p>' }}/>
+              )}
+
+              {item.tags.length > 0 && (
+                <div className="expd-topics">
+                  <span className="expd-topics-lbl">CHỦ ĐỀ</span>
+                  {item.tags.map(t => <span key={t} className="expd-topic-tag">#{t.toLowerCase().replace(/\s+/g,'-')}</span>)}
+                </div>
+              )}
+
+              <div className="expd-engage">
+                <div className="expd-engage-stat"><i className="ti ti-heart"/> <b>{fmtNum(item.likes)}</b> Hữu ích</div>
+                <div className="expd-engage-stat"><i className="ti ti-message-circle"/> <b>{fmtNum(item.comments)}</b> Bình luận</div>
+                <div className="expd-engage-stat"><i className="ti ti-eye"/> <b>{fmtNum(item.views)}</b> Lượt đọc</div>
+                <div className="expd-engage-stat"><i className="ti ti-bookmark"/> <b>{item.saves ? fmtNum(item.saves) : '—'}</b> Lưu</div>
+              </div>
+            </div>
+
+            {/* Sidebar */}
+            <div className="expd-sidebar">
+              <div className="expd-side-card">
+                <div className="expd-side-lbl"><i className="ti ti-world"/> TRẠNG THÁI PUBLISH</div>
+                {item.status === 'published' ? (
+                  <>
+                    <button className="expd-url" onClick={() => copy(`https://${publicUrl}`, 'link')}>
+                      <i className="ti ti-link"/>
+                      <span>{publicUrl}</span>
+                      <i className={'ti ' + (copied === 'link' ? 'ti-check' : 'ti-copy')}/>
+                    </button>
+                    <span className="expd-visibility"><i className="ti ti-eye"/> Công khai</span>
+                    <div className="expd-side-stats">
+                      <span><i className="ti ti-eye"/> {fmtNum(item.views)}</span>
+                      <span><i className="ti ti-heart"/> {fmtNum(item.likes)}</span>
+                      <span><i className="ti ti-message-circle"/> {fmtNum(item.comments)}</span>
+                    </div>
+                    {item.channels?.length > 0 && (
+                      <div className="expd-channels">
+                        {item.channels.includes('web') && <span className="expd-channel-tag"><i className="ti ti-world"/> Web</span>}
+                        {item.channels.includes('newsletter') && <span className="expd-channel-tag"><i className="ti ti-mail"/> Newsletter</span>}
+                      </div>
+                    )}
+                    <div className="expd-published-date">Đăng ngày {item.publishedAt}</div>
+                    <a className="expd-view-live-btn" href={`https://${publicUrl}`} target="_blank" rel="noopener noreferrer">
+                      <i className="ti ti-external-link"/> Xem trang công khai
+                    </a>
+                  </>
+                ) : item.status === 'scheduled' ? (
+                  <div className="expd-scheduled-box">
+                    <i className="ti ti-clock"/> Lên lịch đăng: <b>{(item.scheduledAt || '').replace('T', ' ')}</b>
+                  </div>
+                ) : (
+                  <div className="expd-draft-box">
+                    <span>Chưa publish</span>
+                    <button className="exp-card-pub-btn" onClick={onPublish}>Publish ngay</button>
+                  </div>
+                )}
+              </div>
+
+              {sections && (
+                <div className="expd-side-card">
+                  <div className="expd-side-lbl"><i className="ti ti-list-details"/> BỐ CỤC BÀI</div>
+                  <div className="expd-outline">
+                    {sections.map((s, i) => (
+                      <a key={i} href={`#expd-sec-${i}`} className="expd-outline-item">
+                        <span className="expd-outline-num">{String(i + 1).padStart(2, '0')}</span>
+                        {s.title}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="expd-side-card">
+                <div className="expd-side-lbl"><i className="ti ti-user"/> TÁC GIẢ</div>
+                <div className="expd-side-author">
+                  <span className="exp-card-av" style={{ background: avatarColor(item.author || '?') }}>
+                    {initials(item.author)}
+                  </span>
+                  <div>
+                    <div className="expd-author-name">{item.author || 'Chưa gán'}</div>
+                    <div className="expd-author-sub">{authorPostCount} bài đã viết</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="expd-footer">
+          <div className="expd-footer-left">
+            <button className="btn-ghost" onClick={onEdit}><i className="ti ti-edit"/> Sửa bài</button>
+            {item.status === 'published' && (
+              <button className="btn-ghost" onClick={doUpdatePublish}>
+                <i className={'ti ' + (justSaved ? 'ti-check' : 'ti-refresh')}/> {justSaved ? 'Đã cập nhật' : 'Cập nhật bản đăng'}
+              </button>
+            )}
+            {item.status === 'published' && (
+              <button className="btn-ghost expd-danger-ghost" onClick={onUnpublish}>
+                <i className="ti ti-cloud-off"/> Gỡ khỏi web
+              </button>
+            )}
+          </div>
+          <div className="expd-footer-right">
+            <button className="btn-ghost" onClick={() => copy(`https://notebook.internal/kinh-nghiem/${item.id}`, 'internal')}>
+              <i className={'ti ' + (copied === 'internal' ? 'ti-check' : 'ti-share')}/> {copied === 'internal' ? 'Đã copy link' : 'Chia sẻ nội bộ'}
+            </button>
+            <button className="btn-primary" onClick={onClose}>Đóng</button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -446,6 +716,8 @@ function ExperienceEditor({ item, onUpdate, onBack, onDelete }) {
             rows={2}/>
 
           <div className="exp-toolbar">
+            <button className="exp-tb-btn" title="Tiêu đề mục (tạo mục có đánh số trong trang đọc)" onMouseDown={e=>{e.preventDefault();execCmd('formatBlock','h2');}}><i className="ti ti-heading"/></button>
+            <span className="exp-tb-sep"/>
             <button className="exp-tb-btn" onMouseDown={e=>{e.preventDefault();execCmd('bold');}}><b>B</b></button>
             <button className="exp-tb-btn" onMouseDown={e=>{e.preventDefault();execCmd('italic');}}><em>I</em></button>
             <button className="exp-tb-btn" onMouseDown={e=>{e.preventDefault();execCmd('underline');}}><u>U</u></button>

@@ -2025,7 +2025,8 @@ function ChangelogTab({ proj, onUpsert, onAddEntry }) {
           <p className="cl-header-sub">
             <CInput className="cl-doc-name-input" value={clMeta.docName || ''}
               onChange={e => saveMeta({ ...clMeta, docName: e.target.value })}
-              placeholder={proj.name || 'Tên tài liệu'} />
+              placeholder={proj.name || 'Tên tài liệu'}
+              title={clMeta.docName || proj.name || ''} />
             · {entries.length} bản ghi · Bản hiện tại: v{currentVer}
           </p>
         </div>

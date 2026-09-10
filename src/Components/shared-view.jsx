@@ -18,6 +18,7 @@ const MODULE_ICONS = {
   account:  "ti-calculator",
   crm:      "ti-users",
   hr:       "ti-id-badge",
+  affiliate:"ti-affiliate",
   default:  "ti-cube"
 };
 

@@ -528,6 +528,7 @@ function App() {
             notebook={activeNotebook}
             onBackToHome={backToHome}
             returnContext={returnCtx}
+            onSelect={setSelection}
           />
         </div>
       );
